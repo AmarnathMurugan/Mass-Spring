@@ -1,6 +1,6 @@
 #ifndef BLINN_H
 #define BLINN_H
-#include<materials/material.h>
+#include<material.h>
 #include<glm/glm.hpp>
 #include "Components/DirectionalLight.h"
 
@@ -8,7 +8,7 @@ extern std::shared_ptr<DirectionalLight> Light;
 extern float ambientIntensity;
 extern Eigen::Vector3f ambientColor;
 
-class Blinn : public material
+class Blinn : public Material
 {
 public:
 	Blinn(const char* vertShaderPath, const char* fragShaderPath,bool _useAmbientColor, float _shininess, Eigen::Vector3f _diffuseColor, Eigen::Vector3f _specularColor);

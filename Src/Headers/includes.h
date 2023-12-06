@@ -11,7 +11,7 @@
 #include<Eigen/Dense>
 #include<Eigen/Geometry>
 #include "custom_utils.h"
-#include "graphicsInfo.h"
+#include "gfx.h"
 
 const float  PI_F = 3.14159265358979f;
 Eigen::Vector3f ORIGIN = Eigen::Vector3f::Zero();

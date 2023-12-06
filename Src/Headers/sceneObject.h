@@ -2,7 +2,7 @@
 #define SCENEOBJECT_H
 
 #include "includes.h"
-#include<Components/Component.h>
+#include "Components/Component.h"
 
 class SceneObject
 {

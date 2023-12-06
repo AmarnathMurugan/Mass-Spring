@@ -1,14 +1,14 @@
 #define NOMINMAX
 
 #include "includes.h"
-#include "ObjModel.h"
+#include "triangularMesh.h"
 #include "materials/Blinn.h"
 #include "InteractionHandler.h"
 #include "Components/DirectionalLight.h"
 
 #pragma region Global Variables
 
-std::vector<std::shared_ptr<sceneObject>> World;
+std::vector<std::shared_ptr<SceneObject>> World;
 std::vector<std::shared_ptr<Material>> materials;
 std::shared_ptr<DirectionalLight> Light;
 std::shared_ptr<Camera> Cam;

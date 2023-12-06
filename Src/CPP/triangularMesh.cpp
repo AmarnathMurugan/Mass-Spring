@@ -1,7 +1,10 @@
 #include "triangularMesh.h"
 
 
-TraingularMesh::TraingularMesh(const char* objName, bool loadMat)
+TraingularMesh::TraingularMesh(std::vector<Eigen::Vector3f> _position,
+	std::vector<Eigen::Vector3f> _normal,
+	std::vector<std::array<uint32_t, 3>>& _faces,
+	std::unordered_map<int, std::vector<int>>& _vertAdjacency): SceneObject() , vertexData({ _position,_normal }), faceIndices(_faces), vertAdjacency(_vertAdjacency)
 {	
 	generateBuffers();
 }
@@ -20,17 +23,17 @@ void TraingularMesh::generateBuffers()
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertdata) * vertexData.size(), &vertexData[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Eigen::Vector3f) * vertexData.position.size() * 2, NULL, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cy::TriMesh::TriFace) * model.NF(), &model.F(0), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * faceIndices.size() * 3, &faceIndices[0], GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(material->positionLocation);
-	glVertexAttribPointer(material->positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Eigen::Vector3f) * 2, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glEnableVertexAttribArray(material->normalLocation);
-	glVertexAttribPointer(material->normalLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Eigen::Vector3f) * 2, (void*)offsetof(Vertdata, normal));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(Eigen::Vector3f) * vertexData.position.size()));
 }
 
 TraingularMesh::~TraingularMesh()

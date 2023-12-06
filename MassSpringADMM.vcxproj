@@ -177,7 +177,7 @@
     <ClInclude Include="Src\Headers\Cy\cyTriMesh.h" />
     <ClInclude Include="Src\Headers\Cy\cyVector.h" />
     <ClInclude Include="Src\Headers\glad\glad.h" />
-    <ClInclude Include="Src\Headers\graphicsInfo.h" />
+    <ClInclude Include="Src\Headers\gfx.h" />
     <ClInclude Include="Src\Headers\includes.h" />
     <ClInclude Include="Src\Headers\InteractionHandler.h" />
     <ClInclude Include="Src\Headers\KHR\khrplatform.h" />
