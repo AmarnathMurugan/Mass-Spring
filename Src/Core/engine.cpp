@@ -56,6 +56,8 @@ void Engine::start()
 			continue;
 		this->scene.sceneObjects[i]->Start();
 	}
+	glfwGetCursorPos(this->window, &this->mouseState.prevPos.x(), &this->mouseState.prevPos.y());
+	this->mouseState.curPos = this->mouseState.prevPos;
 }
 
 void Engine::handleEvent(const GLEQevent& event)
@@ -75,24 +77,86 @@ void Engine::handleEvent(const GLEQevent& event)
 			this->keyboardState.held.insert(event.keyboard.key);
 			this->keyboardState.down.insert(event.keyboard.mods);
 			this->keyboardState.held.insert(event.keyboard.mods);
+			this ->handleInteractions(event.keyboard.key, true);
 			break;
 		case GLEQ_KEY_RELEASED:
 			this->keyboardState.held.erase(event.keyboard.key);
 			this->keyboardState.released.insert(event.keyboard.key);
 			this->keyboardState.held.erase(event.keyboard.mods);
 			this->keyboardState.released.insert(event.keyboard.mods);
+			this->handleInteractions(event.keyboard.key, false);
+			break;
+		case GLEQ_BUTTON_PRESSED:
+			this->handleInteractions(event.mouse.button, true);
+			switch (event.mouse.button)
+			{
+			case GLFW_MOUSE_BUTTON_LEFT:
+				this->mouseState.isLeftDown = true;
+				break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				this->mouseState.isRightDown = true;
+				break;
+			case GLFW_MOUSE_BUTTON_MIDDLE:
+				this->mouseState.isMiddleDown = true;
+				break;
+			}
+			break;
+		case GLEQ_BUTTON_RELEASED:
+			this->handleInteractions(event.mouse.button, false);
+			switch (event.mouse.button)
+			{
+			case GLFW_MOUSE_BUTTON_LEFT:
+				this->mouseState.isLeftDown = false;
+				break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				this->mouseState.isRightDown = false;
+				break;
+			case GLFW_MOUSE_BUTTON_MIDDLE:
+				this->mouseState.isMiddleDown = false;
+				break;
+			}
 			break;
 	}
 }
 
+void Engine::handleInteractions(int key, bool isDown)
+{
+	switch (key)
+	{
+		case GLFW_KEY_ESCAPE:
+			if (!isDown)			
+				glfwSetWindowShouldClose(this->window, GLFW_TRUE);			
+			break;
+		case GLFW_KEY_P:
+			if (!isDown) break;
+			this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
+			break;
+		case GLFW_KEY_LEFT_CONTROL:
+			break;
+	}
+
+	switch (key)
+	{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			break;
+	}
+
+}
+
 void Engine::handleInteractions()
 {
-	if(this->keyboardState.released.find(GLFW_KEY_ESCAPE) != this->keyboardState.released.end())
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	bool isCtrlPressed = (this->keyboardState.held.find(GLFW_KEY_LEFT_CONTROL) != this->keyboardState.held.end()) || 
+						 (this->keyboardState.held.find(GLFW_KEY_RIGHT_CONTROL) != this->keyboardState.held.end());
+	if(isCtrlPressed && this->mouseState.isRightDown)
+		this->scene.cam->moveAlongRay(this->mouseState.deltaPos.y() * 0.2);
 }
 
 void Engine::update()
 {
+	this->mouseState.prevPos = this->mouseState.curPos;
+	glfwGetCursorPos(this->window, &this->mouseState.curPos.x(), &this->mouseState.curPos.y());
+	this->mouseState.deltaPos = this->mouseState.curPos - this->mouseState.prevPos;
+
 	this->handleInteractions();
 
 	// iterate through all shaders and set transformation matrices

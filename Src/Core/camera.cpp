@@ -67,20 +67,14 @@ void Camera::RotateCamera(float x, float y)
 	this->transform.translate(lookAtPosition + dir * dist);
 }
 
-void Camera::MoveAlongRay(float dist)
+void Camera::moveAlongRay(float dist)
 {
 	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
 	dir.normalize();
 	this->transform.translate(dir * dist);
 }
 
-void Camera::RegistersceneObject(SceneObject* o)
-{
-	sceneObjects.emplace_back(o);
-}
-
-
-void Camera::SwitchProjectionType(bool isPerspective)
+void Camera::switchProjectionType(bool isPerspective)
 { 
 	this->isPerspective = isPerspective;
 }

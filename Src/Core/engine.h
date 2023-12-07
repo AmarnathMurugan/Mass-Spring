@@ -14,6 +14,7 @@ public:
 	void start();
 	void handleEvent(const GLEQevent& event);
 	void handleInteractions();
+	void handleInteractions(int key, bool isDown);
 	void update();
 	void stop();
 private:
@@ -41,5 +42,13 @@ private:
 	{
 		std::unordered_set<int> down,held,released;
 	}keyboardState;
+
+	struct MouseState
+	{
+		bool isLeftDown = false;
+		bool isRightDown = false;
+		bool isMiddleDown = false;
+		Eigen::Vector2d prevPos,curPos,deltaPos;
+	}mouseState;
 
 };

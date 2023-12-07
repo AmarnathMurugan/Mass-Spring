@@ -10,15 +10,13 @@ public:
 	Eigen::Matrix4f viewMatrix() const;
 	Eigen::Matrix4f projectionMatrix(int WindowWidth, int WindowHeight) const;
 	void RotateCamera(float x, float y);
-	void MoveAlongRay(float dist);
+	void moveAlongRay(float dist);
 	//void PanCamera();
-	void SwitchProjectionType(bool isPerspective = true);
-	void RegistersceneObject(SceneObject* o);
+	void switchProjectionType(bool isPerspective = true);
 
 public:
-	std::vector<SceneObject*> sceneObjects;
+	bool isPerspective = true;
 private:
 	Eigen::Vector3f lookAtPosition;
 	float FOV,nearPlane,farPlane;
-	bool isPerspective = true;
 };
