@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\CPP\camera.cpp" />
+    <ClCompile Include="Src\CPP\gfx.cpp" />
     <ClCompile Include="Src\CPP\material.cpp" />
     <ClCompile Include="Src\CPP\triangularMesh.cpp" />
     <ClCompile Include="Src\CPP\sceneObject.cpp" />

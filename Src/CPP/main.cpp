@@ -49,9 +49,9 @@ int main(int argc, char* argv[])
 	
 
 	// Init OpenGL Parameters
-	glClearColor(renderState.clearColor.x(), renderState.clearColor.y(), renderState.clearColor.z(), 1.0f);
-	glViewport(0, 0, renderState.windowWidth, renderState.windowHeight);
-	glEnable(GL_DEPTH_TEST);
+	glClearColor(renderState.clearColor.x(), renderState.clearColor.y(), renderState.clearColor.z(), 1.0f) $GL_CATCH_ERROR;
+	glViewport(0, 0, renderState.windowWidth, renderState.windowHeight) $GL_CATCH_ERROR;
+	glEnable(GL_DEPTH_TEST) $GL_CATCH_ERROR;
 	// Init World
 	CreateWorld(argv[1]);
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 	// Render Loop
 	while (!glfwWindowShouldClose(window))
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $GL_CATCH_ERROR;
 		
         glfwPollEvents();
 
