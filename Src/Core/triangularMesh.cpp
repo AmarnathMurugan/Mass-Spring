@@ -11,28 +11,28 @@ TriangularMesh::TriangularMesh(const MatrixX3fRowMajor& _position,
 
 void TriangularMesh::render()
 {
-	glBindVertexArray(VAO) $GL_CATCH_ERROR;
-	glDrawElements(GL_TRIANGLES, faceIndices.size() * 3, GL_UNSIGNED_INT, 0) $GL_CATCH_ERROR;
+	glBindVertexArray(VAO) ;
+	glDrawElements(GL_TRIANGLES, faceIndices.size() * 3, GL_UNSIGNED_INT, 0) ;
 }
 
 
 void TriangularMesh::generateBuffers()
 {
-	glGenVertexArrays(1, &VAO) $GL_CATCH_ERROR;
-	glGenBuffers(1, &VBO) $GL_CATCH_ERROR;
-	glBindVertexArray(VAO) $GL_CATCH_ERROR;
+	glGenVertexArrays(1, &VAO) ;
+	glGenBuffers(1, &VBO) ;
+	glBindVertexArray(VAO) ;
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO) $GL_CATCH_ERROR;
-	glBufferData(GL_ARRAY_BUFFER, vertexData.position.size() * sizeof(float) * 2, vertexData.position.data(), GL_STATIC_DRAW) $GL_CATCH_ERROR;
+	glBindBuffer(GL_ARRAY_BUFFER, VBO) ;
+	glBufferData(GL_ARRAY_BUFFER, vertexData.position.size() * sizeof(float) * 2, vertexData.position.data(), GL_STATIC_DRAW) ;
 
-	glGenBuffers(1, &EBO) $GL_CATCH_ERROR;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO) $GL_CATCH_ERROR;
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * faceIndices.size(), faceIndices.data(), GL_STATIC_DRAW) $GL_CATCH_ERROR;
-	glEnableVertexAttribArray(0) $GL_CATCH_ERROR;
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0) $GL_CATCH_ERROR;
+	glGenBuffers(1, &EBO) ;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO) ;
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * faceIndices.size(), faceIndices.data(), GL_STATIC_DRAW) ;
+	glEnableVertexAttribArray(0) ;
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0) ;
 
-	glEnableVertexAttribArray(1) $GL_CATCH_ERROR;
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * vertexData.position.size())) $GL_CATCH_ERROR;
+	glEnableVertexAttribArray(1) ;
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * vertexData.position.size())) ;
 }
 
 void TriangularMesh::Update()
@@ -54,9 +54,9 @@ void TriangularMesh::Update()
 		}		
 		isDirty = false;	
 	}
-	glBindVertexArray(VAO) $GL_CATCH_ERROR;
-	glBindBuffer(GL_ARRAY_BUFFER, VBO) $GL_CATCH_ERROR;
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.position.size() * sizeof(float) * 2, vertexData.position.data()) $GL_CATCH_ERROR;
+	glBindVertexArray(VAO) ;
+	glBindBuffer(GL_ARRAY_BUFFER, VBO) ;
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.position.size() * sizeof(float) * 2, vertexData.position.data()) ;
 }
 
 TriangularMesh::~TriangularMesh()

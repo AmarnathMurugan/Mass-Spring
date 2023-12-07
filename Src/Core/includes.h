@@ -12,6 +12,4 @@
 #include "customUtils.h"
 #include "gfx.h"
 
-extern RenderState renderState;
-
 

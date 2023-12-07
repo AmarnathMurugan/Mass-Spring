@@ -14,13 +14,6 @@ typedef Eigen::Transform<float, 3, Eigen::Affine> Transform;
 typedef Eigen::Matrix<float, Eigen::Dynamic, 3,Eigen::RowMajor> MatrixX3fRowMajor;
 typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, 3, Eigen::RowMajor> MatrixX3UIRowMajor;
 
-void glCatchError(const char* file, int line);
-#ifdef _DEBUG
-	#define $GL_CATCH_ERROR ;glCatchError(__FILE__,__LINE__);
-#else
-	#define $GL_CATCH_ERROR ;((void)0);
-#endif
-
 struct RenderState
 {
 	Eigen::Matrix4f viewMatrix,projectionMatrix;
@@ -31,3 +24,4 @@ struct RenderState
 	float ambientIntensity = 0.2f;
 };
 
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

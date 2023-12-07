@@ -154,6 +154,7 @@
     <ClInclude Include="Src\Core\camera.h" />
     <ClInclude Include="Src\Core\Component.h" />
     <ClInclude Include="Src\Core\customUtils.h" />
+    <ClInclude Include="Src\Core\engine.h" />
     <ClInclude Include="Src\Core\gfx.h" />
     <ClInclude Include="Src\Core\includes.h" />
     <ClInclude Include="Src\Core\material.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="Src\Deps\Cy\cyTriMesh.h" />
     <ClInclude Include="Src\Deps\Cy\cyVector.h" />
     <ClInclude Include="Src\Deps\glad\glad.h" />
+    <ClInclude Include="Src\Deps\gleq.h" />
     <ClInclude Include="Src\Deps\KHR\khrplatform.h" />
     <ClInclude Include="Src\Headers\Custom\camera.h" />
     <ClInclude Include="Src\Headers\Custom\Components\Component.h" />
@@ -180,13 +182,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Core\camera.cpp" />
+    <ClCompile Include="Src\Core\engine.cpp" />
     <ClCompile Include="Src\Core\gfx.cpp" />
     <ClCompile Include="Src\Core\main.cpp" />
     <ClCompile Include="Src\Core\material.cpp" />
     <ClCompile Include="Src\Core\sceneObject.cpp" />
     <ClCompile Include="Src\Core\shader.cpp" />
     <ClCompile Include="Src\Core\triangularMesh.cpp" />
-    <ClCompile Include="Src\Deps\glad.c" />
+    <ClCompile Include="Src\Deps\glad\glad.c" />
     <ClCompile Include="Src\Materials\unlitMaterial.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

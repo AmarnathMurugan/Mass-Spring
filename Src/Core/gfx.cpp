@@ -1,43 +1,83 @@
 #include <iostream>
 #include "gfx.h"
 
-void glCatchError(const char* file, int line)
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	GLenum err;
-	std::string error;
-	do 
 	{
-		err = glGetError();
-        switch (err)
-        {
-            case GL_INVALID_ENUM:
-                error = "GL_INVALID_ENUM";
-                break;
-            case GL_INVALID_VALUE:
-                error = "GL_INVALID_VALUE";
-                break;
-            case GL_INVALID_OPERATION:
-                error = "GL_INVALID_OPERATION";
-                break;
-            case GL_STACK_OVERFLOW:
-                error = "GL_STACK_OVERFLOW";
-                break;
-            case GL_STACK_UNDERFLOW:
-                error = "GL_STACK_UNDERFLOW";
-                break;
-            case GL_OUT_OF_MEMORY:
-                error = "GL_OUT_OF_MEMORY";
-                break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:
-                error = "GL_INVALID_FRAMEBUFFER_OPERATION";
-                break;
-            default:
-                error = "unknown error";
-                break;
-        }
-		if (err != GL_NO_ERROR) 
-			std::cout<<"GL error: " << file << line << error;			
-		
-	}while(err  != GL_NO_ERROR);
+		// print message with the right string for type, severity and source
+		std::string _source;
+		std::string _type;
+		std::string _severity;
+		switch (source)
+		{
+		case GL_DEBUG_SOURCE_API:
+			_source = "API";
+			break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+			_source = "WINDOW_SYSTEM";
+			break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER:
+			_source = "SHADER_COMPILER";
+			break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY:
+			_source = "THIRD_PARTY";
+			break;
+		case GL_DEBUG_SOURCE_APPLICATION:
+			_source = "APPLICATION";
+			break;
+		case GL_DEBUG_SOURCE_OTHER:
+			_source = "OTHER";
+			break;
+		}
 
+
+		switch (type)
+		{
+		case GL_DEBUG_TYPE_ERROR:
+			_type = "ERROR";
+			break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+			_type = "DEPRECATED_BEHAVIOR";
+			break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+			_type = "UNDEFINED_BEHAVIOR";
+			break;
+		case GL_DEBUG_TYPE_PORTABILITY:
+			_type = "PORTABILITY";
+			break;
+		case GL_DEBUG_TYPE_PERFORMANCE:
+			_type = "PERFORMANCE";
+			break;
+		case GL_DEBUG_TYPE_MARKER:
+			_type = "MARKER";
+			break;
+		case GL_DEBUG_TYPE_PUSH_GROUP:
+			_type = "PUSH_GROUP";
+			break;
+		case GL_DEBUG_TYPE_POP_GROUP:
+			_type = "POP_GROUP";
+			break;
+		case GL_DEBUG_TYPE_OTHER:
+			_type = "OTHER";
+			break;
+		}
+
+		switch (severity)
+		{
+		case GL_DEBUG_SEVERITY_HIGH:
+			_severity = "HIGH";
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			_severity = "MEDIUM";
+			break;
+		case GL_DEBUG_SEVERITY_LOW:
+			_severity = "LOW";
+			break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			_severity = "NOTIFICATION";
+			return;
+		}
+
+		std::cout << "\n[" << _source << " | " << _severity << " | " << _type << "]" << message;
+	}
 }
