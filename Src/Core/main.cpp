@@ -97,6 +97,12 @@ int main(int argc, char* argv[])
 		glfwSwapBuffers(window);
 	}
 
+	// delete all objects
+	sceneObjects.clear();
+	shaders.clear();
+	sceneObjectMaterialMapping.clear();
+	cam.reset();
+
 	glfwTerminate();
 	return 0;
 }
@@ -113,7 +119,7 @@ void createWorld()
 		});
 
 	shaders.emplace_back(unlitShader);
-	std::shared_ptr<UnlitMaterial> unlitMaterial = std::make_shared<UnlitMaterial>(unlitShader,Eigen::Vector3f(255.f,255.1f,255.0f));
+	std::shared_ptr<UnlitMaterial> unlitMaterial = std::make_shared<UnlitMaterial>(unlitShader,Eigen::Vector3f(1.0f,0.5f,0.2f));
 	 
 	std::shared_ptr<TriangularMesh> mesh = std::make_shared<TriangularMesh>();
 	sceneObjects.emplace_back(mesh);
