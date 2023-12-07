@@ -23,3 +23,8 @@ void SceneObject::Update()
             component->Update();
     }
 }
+
+Eigen::Matrix4f SceneObject::getModelMatrix()
+{
+    return transform.matrix();
+}

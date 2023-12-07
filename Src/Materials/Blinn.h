@@ -2,7 +2,7 @@
 #define BLINN_H
 #include<material.h>
 #include<glm/glm.hpp>
-#include "Components/DirectionalLight.h"
+#include "DirectionalLight.h"
 
 extern std::shared_ptr<DirectionalLight> Light;
 extern float ambientIntensity;

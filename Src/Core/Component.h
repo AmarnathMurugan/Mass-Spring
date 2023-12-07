@@ -1,5 +1,4 @@
-#ifndef COMPONENT_H
-#define COMPONENT_H
+#pragma once
 
 class SceneObject;
 
@@ -12,6 +11,3 @@ class Component {
 	bool isEnabled = true;
 	SceneObject* sceneObject;
 };
-
-
-#endif  // !COMPONENT_H

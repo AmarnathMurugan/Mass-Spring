@@ -1,5 +1,4 @@
-#ifndef INCLUDES_H
-#define INCLUDES_H
+#pragma once
 
 #include<iostream>
 #include<glad/glad.h>
@@ -13,5 +12,6 @@
 #include "customUtils.h"
 #include "gfx.h"
 
-#endif // !INCLUDES_H
+extern RenderState renderState;
+
 

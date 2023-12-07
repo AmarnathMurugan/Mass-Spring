@@ -1,5 +1,11 @@
-#include "Camera.h"
+#include "camera.h"
 
+Camera::Camera(Eigen::Vector3f lookAtPos, float fov, float near, float far):lookAtPosition(lookAtPos),FOV(fov),nearPlane(near),farPlane(far)
+{
+	this->transform.matrix().setIdentity();
+	this->transform.translate(lookAtPos - Eigen::Vector3f(0, 0, 5));
+	this->isPerspective = true;
+}
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
@@ -46,7 +52,7 @@ void Camera::RotateCamera(float x, float y)
 	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
 	float dist = dir.norm();
 	dir.normalize();
-	Eigen::Vector3f right = dir.cross(UP);
+	Eigen::Vector3f right = dir.cross(Eigen::Vector3f(0,1,0));
 	right.normalize();
 	Eigen::Vector3f up = right.cross(dir);
 	up.normalize();
@@ -64,7 +70,6 @@ void Camera::RotateCamera(float x, float y)
 void Camera::MoveAlongRay(float dist)
 {
 	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
-	float dist = dir.norm();
 	dir.normalize();
 	this->transform.translate(dir * dist);
 }
@@ -75,7 +80,7 @@ void Camera::RegistersceneObject(SceneObject* o)
 }
 
 
-void Camera::SwitchProjectionType(bool isPerspective = true)
+void Camera::SwitchProjectionType(bool isPerspective)
 { 
 	this->isPerspective = isPerspective;
 }

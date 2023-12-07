@@ -1,6 +1,6 @@
 #ifndef DIRECTIONALLIGHT_H
 #define DIRECTIONALLIGHT_H
-#include "Components/Component.h"
+#include "Component.h"
 
 extern std::vector<std::shared_ptr<material>> materials;
 

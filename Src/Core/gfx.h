@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Eigen/Dense>
 #include <Eigen/Core>
 #include <glad/glad.h>
@@ -7,13 +8,6 @@
 
 
 const float  PI_F = 3.14159265358979f;
-Eigen::Vector3f ORIGIN = Eigen::Vector3f::Zero();
-Eigen::Vector3f UP = Eigen::Vector3f(0, 1, 0);
-Eigen::Vector3f RIGHT = Eigen::Vector3f(1, 0, 0);
-Eigen::Vector3f FORWARD = Eigen::Vector3f(0, 0, 1);
-Eigen::Vector3f LEFT = Eigen::Vector3f(-1, 0, 0);
-Eigen::Vector3f DOWN = Eigen::Vector3f(0, -1, 0);
-Eigen::Vector3f BACK = Eigen::Vector3f(0, 0, -1);
 
 
 typedef Eigen::Transform<float, 3, Eigen::Affine> Transform;

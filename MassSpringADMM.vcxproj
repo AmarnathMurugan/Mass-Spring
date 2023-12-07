@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Src\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src\Deps;$(SolutionDir)Src\Core;$(SolutionDir)Src\Components;$(SolutionDir)Src\Materials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,46 +151,43 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\CPP\camera.cpp" />
-    <ClCompile Include="Src\CPP\gfx.cpp" />
-    <ClCompile Include="Src\CPP\shader.cpp" />
-    <ClCompile Include="Src\CPP\triangularMesh.cpp" />
-    <ClCompile Include="Src\CPP\sceneObject.cpp" />
-    <ClCompile Include="Src\glad.c" />
-    <ClCompile Include="Src\CPP\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Src\Headers\camera.h" />
-    <ClInclude Include="Src\Headers\Components\Component.h" />
-    <ClInclude Include="Src\Headers\Components\DirectionalLight.h" />
+    <ClInclude Include="Src\Core\camera.h" />
+    <ClInclude Include="Src\Core\Component.h" />
+    <ClInclude Include="Src\Core\customUtils.h" />
+    <ClInclude Include="Src\Core\gfx.h" />
+    <ClInclude Include="Src\Core\includes.h" />
+    <ClInclude Include="Src\Core\material.h" />
+    <ClInclude Include="Src\Core\sceneObject.h" />
+    <ClInclude Include="Src\Core\shader.h" />
+    <ClInclude Include="Src\Core\triangularMesh.h" />
+    <ClInclude Include="Src\Deps\Cy\cyCore.h" />
+    <ClInclude Include="Src\Deps\Cy\cyMatrix.h" />
+    <ClInclude Include="Src\Deps\Cy\cyTriMesh.h" />
+    <ClInclude Include="Src\Deps\Cy\cyVector.h" />
+    <ClInclude Include="Src\Deps\glad\glad.h" />
+    <ClInclude Include="Src\Deps\KHR\khrplatform.h" />
     <ClInclude Include="Src\Headers\Custom\camera.h" />
     <ClInclude Include="Src\Headers\Custom\Components\Component.h" />
     <ClInclude Include="Src\Headers\Custom\Components\DirectionalLight.h" />
-    <ClInclude Include="Src\Headers\customUtils.h" />
-    <ClInclude Include="Src\Headers\Cy\cyMatrix.h" />
     <ClInclude Include="Src\Headers\Custom\includes.h" />
     <ClInclude Include="Src\Headers\Custom\InteractionHandler.h" />
     <ClInclude Include="Src\Headers\Custom\Materials\Blinn.h" />
     <ClInclude Include="Src\Headers\Custom\Materials\Material.h" />
     <ClInclude Include="Src\Headers\Custom\ObjModel.h" />
     <ClInclude Include="Src\Headers\Custom\custom_utils.h" />
-    <ClInclude Include="Src\Headers\Cy\cyCore.h" />
-    <ClInclude Include="Src\Headers\Cy\cyTriMesh.h" />
-    <ClInclude Include="Src\Headers\Cy\cyVector.h" />
-    <ClInclude Include="Src\Headers\glad\glad.h" />
-    <ClInclude Include="Src\Headers\gfx.h" />
-    <ClInclude Include="Src\Headers\includes.h" />
-    <ClInclude Include="Src\Headers\InteractionHandler.h" />
-    <ClInclude Include="Src\Headers\KHR\khrplatform.h" />
     <ClInclude Include="Src\Headers\Custom\sceneObject.h" />
-    <ClInclude Include="Src\Headers\Materials\Blinn.h" />
-    <ClInclude Include="Src\Headers\shader.h" />
-    <ClInclude Include="Src\Headers\triangularMesh.h" />
-    <ClInclude Include="Src\Headers\sceneObject.h" />
+    <ClInclude Include="Src\Materials\unlitMaterial.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Src\Shaders\Unlit\unlit.frag" />
-    <None Include="Src\Shaders\Unlit\unlit.vert" />
+    <ClCompile Include="Src\Core\camera.cpp" />
+    <ClCompile Include="Src\Core\gfx.cpp" />
+    <ClCompile Include="Src\Core\main.cpp" />
+    <ClCompile Include="Src\Core\material.cpp" />
+    <ClCompile Include="Src\Core\sceneObject.cpp" />
+    <ClCompile Include="Src\Core\shader.cpp" />
+    <ClCompile Include="Src\Core\triangularMesh.cpp" />
+    <ClCompile Include="Src\Deps\glad.c" />
+    <ClCompile Include="Src\Materials\unlitMaterial.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,35 +1,17 @@
 #ifndef INTERACTIONHANDLER_H
 #define INTERACTIONHANDLER_H
 
-#include <Camera.h>
-#include <GLFW/glfw3.h>
-#include <materials/material.h>
-
 #include <iostream>
-
-extern std::vector<std::shared_ptr<material>> materials;
-extern std::shared_ptr<Camera> Cam;
-extern std::shared_ptr<DirectionalLight> Light;
-bool isLeftMouseButtonPressed = false, isRightMouseButtonPressed = false, isCtrlPressed = false;
-glm::vec2 prevMousePosition, deltaMousePosition;
-
-
 
 void KeyboardInputsCallback(GLFWwindow* window, int key, int scancode,
                             int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
     glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-  if (key == GLFW_KEY_F6 && action == GLFW_RELEASE) {
-    for (int i = 0; i < materials.size(); i++) materials[i]->RecompileShaders();
-    Cam->triggerUpdateMvpEvents();
-    std::cerr << "\n Shaders recompiled";
-  }
+  //if (key == GLFW_KEY_P && action == GLFW_RELEASE) Cam->SwitchProjectionType();
 
-  if (key == GLFW_KEY_P && action == GLFW_RELEASE) Cam->SwitchProjectionType();
-
-  if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS) isCtrlPressed = true;
-  if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE) isCtrlPressed = false;
+  //if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS) isCtrlPressed = true;
+  //if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE) isCtrlPressed = false;
 }
 
 void WindowResizeCallback(GLFWwindow* window, int width, int height) {

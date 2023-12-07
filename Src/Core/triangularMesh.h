@@ -1,5 +1,4 @@
-#ifndef TRIANGULARMESH_H
-#define TRIANGULARMESH_H
+#pragma once
 
 #include "includes.h"
 #include<material.h>
@@ -21,6 +20,9 @@ public:
 	std::unordered_map<int,std::vector<int>> vertAdjacency;
 	bool isDirty = false;
 
+private:
+	GLuint VBO = GL_INVALID_INDEX, VAO = GL_INVALID_INDEX, EBO = GL_INVALID_INDEX;
+
 public:
 	TriangularMesh():SceneObject(){};
 	TriangularMesh(const MatrixX3fRowMajor& _position,
@@ -29,10 +31,6 @@ public:
 					std::unordered_map<int, std::vector<int>>& _vertAdjacency);
 	void generateBuffers();
 	void Update();
-	virtual void render();
+	virtual void render() override;
 	~TriangularMesh();
 };
-
-
-
-#endif 

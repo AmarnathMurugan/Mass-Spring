@@ -1,10 +1,9 @@
-#ifndef CUSTOM_UTILS_H
-#define CUSTOM_UTILS_H
+#pragma once
 
 #include<fstream>
 #include<string>
 #include<Cy/cyTriMesh.h>
-
+#include "gfx.h"
 
 
 /// <summary>
@@ -19,7 +18,7 @@ inline float Lerp(float a, float b, float t)
 	return a * (1 - t) + b * t;
 }
 
-std::string GetStringFromFile(const char* name)
+static std::string GetStringFromFile(std::string name)
 {
 	std::ifstream f(name);
 	if (!f.is_open())
@@ -38,7 +37,7 @@ std::string GetStringFromFile(const char* name)
 	return content;
 }
 
-void importObjModel(const char* objName, 
+static void importObjModel(std::string objName, 
 					bool loadMat, 
 					MatrixX3fRowMajor& _position,
 					MatrixX3fRowMajor& _normal,
@@ -46,7 +45,7 @@ void importObjModel(const char* objName,
 					std::unordered_map<int, std::vector<int>>& vertAdjacency)
 {
 	cy::TriMesh model;
-	if (!model.LoadFromFileObj(objName, loadMat))
+	if (!model.LoadFromFileObj(objName.data(), loadMat))
 	{
 		std::cerr << "\n Unable to load obj " << objName;
 		return;
@@ -67,13 +66,13 @@ void importObjModel(const char* objName,
 			int norm = model.FN(i).v[j];
 			Eigen::Vector3f curNormal = Eigen::Vector3f(model.VN(norm).x, model.VN(norm).y, model.VN(norm).z);
 			//if the vertex is not yet dealt with
-			if (_position(vert,Eigen::all) == Eigen::Vector3f::Zero() && _normal(vert,Eigen::all) == Eigen::Vector3f::Zero())
+			if (Eigen::Vector3f(_position(vert,Eigen::all)) == Eigen::Vector3f::Zero() && Eigen::Vector3f(_normal(vert,Eigen::all)) == Eigen::Vector3f::Zero())
 			{
 				_position(vert,Eigen::all) = Eigen::Vector3f(model.V(vert).x, model.V(vert).y, model.V(vert).z);
 				_normal(vert, Eigen::all) = curNormal;
 			}
-			// if the vertex is already dealt with but the normal is different
-			else if (_normal(vert, Eigen::all) != curNormal && size > model.NV())
+			// if the vertex is already dealt with but the normal is different (Conversion to Vector3f is done becuase != and == doesn't work for sliced matrix and vector3f)		
+			else if (Eigen::Vector3f(_normal(vert, Eigen::all)) != curNormal && size > model.NV())
 			{
 				bool isDealtWith = false;
 				//Check in duplicates
@@ -112,4 +111,4 @@ void importObjModel(const char* objName,
 	}
 }
 
-#endif 
+
