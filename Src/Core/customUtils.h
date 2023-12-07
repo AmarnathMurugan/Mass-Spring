@@ -110,5 +110,3 @@ static void importObjModel(std::string objName,
 		vertAdjacency[model.F(i).v[2]].emplace_back(model.F(i).v[1]);
 	}
 }
-
-
