@@ -27,7 +27,7 @@
     <ClCompile Include="Src\CPP\sceneObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\CPP\material.cpp">
+    <ClCompile Include="Src\CPP\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\CPP\triangularMesh.cpp">
@@ -110,7 +110,7 @@
     <ClInclude Include="Src\Headers\Materials\Blinn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Headers\material.h">
+    <ClInclude Include="Src\Headers\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Headers\triangularMesh.h">

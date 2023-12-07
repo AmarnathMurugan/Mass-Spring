@@ -8,7 +8,7 @@ extern std::shared_ptr<DirectionalLight> Light;
 extern float ambientIntensity;
 extern Eigen::Vector3f ambientColor;
 
-class Blinn : public Material
+class Blinn : public Shader
 {
 public:
 	Blinn(const char* vertShaderPath, const char* fragShaderPath,bool _useAmbientColor, float _shininess, Eigen::Vector3f _diffuseColor, Eigen::Vector3f _specularColor);

@@ -1,13 +1,13 @@
 #include "material.h"
 
-Material::Material(std::unordered_map<ShaderType, const char*> _shaderPaths, Eigen::Vector3f _diffuseColor):
+Shader::Shader(std::unordered_map<ShaderType, const char*> _shaderPaths):
 	shaderPaths(_shaderPaths)
 {
 	recompileShaders();
 }
 
 
-GLuint Material::compileShader(const char* pth, ShaderType shaderType)
+GLuint Shader::compileShader(const char* pth, ShaderType shaderType)
 {
 	std::string fileContent = GetStringFromFile(pth);
 	if (fileContent == "\0")
@@ -30,7 +30,7 @@ GLuint Material::compileShader(const char* pth, ShaderType shaderType)
 	return shader;
 }
 
-void Material::linkShaders()
+void Shader::linkShaders()
 {
 	program = glCreateProgram() $GL_CATCH_ERROR;
 	for(auto& shader:shaders)
@@ -49,7 +49,7 @@ void Material::linkShaders()
 }
 
 
-void Material::recompileShaders()
+void Shader::recompileShaders()
 {
 	glDeleteProgram(program) $GL_CATCH_ERROR;
 	for (auto& shader : shaderPaths)
@@ -57,16 +57,15 @@ void Material::recompileShaders()
 		shaders[shader.first] = compileShader(shader.second, shader.first);
 	}
 	linkShaders();
-	setShaderParameters();
 }
 
 
-void Material::use()
+void Shader::use()
 {
 	glUseProgram(program) $GL_CATCH_ERROR;
 }
 
-inline GLuint Material::getProgram() const
+inline GLuint Shader::getProgram() const
 {
 	return program;
 }

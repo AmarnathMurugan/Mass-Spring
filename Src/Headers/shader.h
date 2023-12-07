@@ -1,5 +1,5 @@
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#ifndef SHADER_H
+#define SHADER_H
 
 #include "includes.h"
 
@@ -12,13 +12,12 @@ enum class ShaderType
 	TessellationEvaluationShader = GL_TESS_EVALUATION_SHADER
 };
 
-class Material
+class Shader
 {
 public:
-	Material(std::unordered_map<ShaderType,const char*> _shaderPaths, Eigen::Vector3f _diffuseColor);
+	Shader(std::unordered_map<ShaderType,const char*> _shaderPaths);
 	void use();
 	void recompileShaders();
-	virtual void setShaderParameters() = 0;
 	GLuint getProgram() const;
 
 private:
@@ -29,8 +28,9 @@ protected:
 	GLuint program;
 	std::unordered_map<ShaderType, const char*> shaderPaths;
 	std::unordered_map<ShaderType, GLuint> shaders;
+	std::unordered_map<std::string, GLuint> uniformLocations;
 };
 
 
-#endif // !MATERIAL_H
+#endif // !SHADER_H
 

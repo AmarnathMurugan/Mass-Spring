@@ -9,7 +9,7 @@
 #pragma region Global Variables
 
 std::vector<std::shared_ptr<SceneObject>> World;
-std::vector<std::shared_ptr<Material>> materials;
+std::vector<std::shared_ptr<Shader>> materials;
 std::shared_ptr<DirectionalLight> Light;
 std::shared_ptr<Camera> Cam;
 
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
             World[i]->Update();
 			if (!World[i]->isRenderable)
 				continue;
-            World[i]->Render();
+            World[i]->render();
 		}
 		
 		glfwSwapBuffers(window);
@@ -91,7 +91,7 @@ void CreateWorld(const char* argv)
 {
 	Cam = std::make_shared<Camera>(Eigen::Vector3f(0.0), 50);
 
-	auto mat = std::make_shared<material>("Src/Shaders/Unlit/unlit.vert", "Src/Shaders/Unlit/unlit.frag",Eigen::Vector3f(1));
+	auto mat = std::make_shared<Shader>("Src/Shaders/Unlit/unlit.vert", "Src/Shaders/Unlit/unlit.frag",Eigen::Vector3f(1));
 	materials.emplace_back(mat);
 	auto sphere = std::make_shared <ObjModel>("./Src/Models/sphere.obj", false, mat);
 	sphere->transform.translate(Eigen::Vector3f(0, 20, 0));
