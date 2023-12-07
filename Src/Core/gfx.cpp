@@ -28,9 +28,6 @@ void glCatchError(const char* file, int line)
             case GL_OUT_OF_MEMORY:
                 error = "GL_OUT_OF_MEMORY";
                 break;
-            case GL_TABLE_TOO_LARGE:
-                error = "GL_TABLE_TOO_LARGE";
-                break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:
                 error = "GL_INVALID_FRAMEBUFFER_OPERATION";
                 break;
