@@ -147,8 +147,14 @@ void Engine::handleInteractions()
 {
 	bool isCtrlPressed = (this->keyboardState.held.find(GLFW_KEY_LEFT_CONTROL) != this->keyboardState.held.end()) || 
 						 (this->keyboardState.held.find(GLFW_KEY_RIGHT_CONTROL) != this->keyboardState.held.end());
-	if(isCtrlPressed && this->mouseState.isRightDown)
+	bool isAltPressed = (this->keyboardState.held.find(GLFW_KEY_LEFT_ALT) != this->keyboardState.held.end()) ||
+		(this->keyboardState.held.find(GLFW_KEY_RIGHT_ALT) != this->keyboardState.held.end());
+	
+	if(isAltPressed && this->mouseState.isRightDown)
 		this->scene.cam->moveAlongRay(this->mouseState.deltaPos.y() * 0.2);
+
+	if(isAltPressed && this->mouseState.isMiddleDown)
+		this->scene.cam->panCamera(this->mouseState.deltaPos);
 }
 
 void Engine::update()

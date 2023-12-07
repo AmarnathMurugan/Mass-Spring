@@ -11,7 +11,7 @@ public:
 	Eigen::Matrix4f projectionMatrix(int WindowWidth, int WindowHeight) const;
 	void RotateCamera(float x, float y);
 	void moveAlongRay(float dist);
-	//void PanCamera();
+	void panCamera(const Eigen::Vector2d& delta);
 	void switchProjectionType(bool isPerspective = true);
 
 public:

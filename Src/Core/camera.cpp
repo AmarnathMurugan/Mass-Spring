@@ -67,6 +67,20 @@ void Camera::RotateCamera(float x, float y)
 	this->transform.translate(lookAtPosition + dir * dist);
 }
 
+void Camera::panCamera(const Eigen::Vector2d& delta)
+{
+	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
+	dir.normalize();
+	Eigen::Vector3f up = Eigen::Vector3f(0, 1, 0);
+	Eigen::Vector3f right = dir.cross(up);
+	right.normalize();
+	Eigen::Vector3f translation = Eigen::Vector3f::Zero();
+	translation -= right * delta.x();
+	translation += up * delta.y();
+	this->transform.translate(translation * 0.01);
+	lookAtPosition += translation *0.01;
+}
+
 void Camera::moveAlongRay(float dist)
 {
 	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
