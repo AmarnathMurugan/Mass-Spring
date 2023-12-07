@@ -61,10 +61,7 @@ void TriangularMesh::Update()
 
 TriangularMesh::~TriangularMesh()
 {
-	glBindVertexArray(0) $GL_CATCH_ERROR;
-	glBindBuffer(GL_ARRAY_BUFFER, 0) $GL_CATCH_ERROR;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) $GL_CATCH_ERROR;
-	glDeleteBuffers(1, &VBO) $GL_CATCH_ERROR;
-	glDeleteBuffers(1, &EBO) $GL_CATCH_ERROR;
-	glDeleteVertexArrays(1, &VAO) $GL_CATCH_ERROR;
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteVertexArrays(1, &VAO);
 }
