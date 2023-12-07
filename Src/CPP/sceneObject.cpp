@@ -9,7 +9,6 @@ void SceneObject::AddComponent(std::shared_ptr<Component> comp)
 
 void SceneObject::Start()
 {
-
     for (auto component : components)
     {
         component->Start();

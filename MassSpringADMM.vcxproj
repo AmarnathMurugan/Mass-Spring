@@ -165,7 +165,7 @@
     <ClInclude Include="Src\Headers\Custom\camera.h" />
     <ClInclude Include="Src\Headers\Custom\Components\Component.h" />
     <ClInclude Include="Src\Headers\Custom\Components\DirectionalLight.h" />
-    <ClInclude Include="Src\Headers\custom_utils.h" />
+    <ClInclude Include="Src\Headers\customUtils.h" />
     <ClInclude Include="Src\Headers\Cy\cyMatrix.h" />
     <ClInclude Include="Src\Headers\Custom\includes.h" />
     <ClInclude Include="Src\Headers\Custom\InteractionHandler.h" />

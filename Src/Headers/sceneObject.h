@@ -8,7 +8,7 @@ class SceneObject
 {
 public:	
 	SceneObject() : transform(Transform::Identity()), name("sceneObject") {}
-    virtual void Render() = 0;
+    virtual void render() = 0;
     virtual void AddComponent(std::shared_ptr<Component> component);
     void Start();
     void Update();

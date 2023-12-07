@@ -3,6 +3,7 @@
 
 #include<fstream>
 #include<string>
+#include<Cy/cyTriMesh.h>
 
 
 
@@ -39,9 +40,9 @@ std::string GetStringFromFile(const char* name)
 
 void importObjModel(const char* objName, 
 					bool loadMat, 
-					std::vector<Eigen::Vector3f>& position, 
-					std::vector<Eigen::Vector3f>& normal, 
-					std::vector<std::array<uint32_t,3>>& faces,
+					MatrixX3fRowMajor& _position,
+					MatrixX3fRowMajor& _normal,
+					MatrixX3UIRowMajor& _faces,
 					std::unordered_map<int, std::vector<int>>& vertAdjacency)
 {
 	cy::TriMesh model;
@@ -52,8 +53,9 @@ void importObjModel(const char* objName,
 	}
 
 	//// TODO: check the initial value of vertexData.position and vertexData.normal and see if the comparison to deafault constructor is valid
-	position.resize((uint32_t)(model.NV() * 1.1));
-	normal.resize((uint32_t)(model.NV() * 1.1));
+	_position.resize((uint32_t)(model.NV() * 1.1),3);
+	_position.setZero();
+	_normal = _position;
 	int size = model.NV();
 	// Iterate through faces
 	for (int i = 0; i < model.NF(); i++)
@@ -65,40 +67,42 @@ void importObjModel(const char* objName,
 			int norm = model.FN(i).v[j];
 			Eigen::Vector3f curNormal = Eigen::Vector3f(model.VN(norm).x, model.VN(norm).y, model.VN(norm).z);
 			//if the vertex is not yet dealt with
-			if (position[vert] == Eigen::Vector3f::Zero() && normal[vert] == Eigen::Vector3f::Zero())
+			if (_position(vert,Eigen::all) == Eigen::Vector3f::Zero() && _normal(vert,Eigen::all) == Eigen::Vector3f::Zero())
 			{
-				position[vert] = Eigen::Vector3f(model.V(vert).x, model.V(vert).y, model.V(vert).z);
-				normal[vert] = curNormal;
+				_position(vert,Eigen::all) = Eigen::Vector3f(model.V(vert).x, model.V(vert).y, model.V(vert).z);
+				_normal(vert, Eigen::all) = curNormal;
 			}
 			// if the vertex is already dealt with but the normal is different
-			else if (normal[vert] != curNormal && size > model.NV())
+			else if (_normal(vert, Eigen::all) != curNormal && size > model.NV())
 			{
-
+				bool isDealtWith = false;
 				//Check in duplicates
 				for (int k = model.NV() - 1; k < size; k++)
 				{
-					if (normal[vert] == normal[k] && position[vert] == position[k])
+					if (_normal(vert, Eigen::all) == _normal(k, Eigen::all) && _position(vert, Eigen::all) == _position(k, Eigen::all))
 					{
 						// if the vertex is already dealth with, set the index to the duplicate vertex
 						model.F(i).v[j] = k;
-						continue;
+						isDealtWith = true;
 					}
 				}
 
+				if(isDealtWith)
+					continue;
+				
 				//Create duplicate vertex if not dealt with
-
-				if (size >= position.size())
+				if (size >= _position.rows())
 				{
-					position.resize((uint32_t)(model.NV() * 1.1));
-					normal.resize((uint32_t)(model.NV() * 1.1));
+					_position.conservativeResize((uint32_t)(_position.rows() * 1.1), 3);
+					_normal.conservativeResize((uint32_t)(_normal.rows() * 1.1), 3);
 				}
-				position[size] = Eigen::Vector3f(model.V(vert).x, model.V(vert).y, model.V(vert).z);
-				normal[size] = curNormal;
+				_position(size,Eigen::all) = Eigen::Vector3f(model.V(vert).x, model.V(vert).y, model.V(vert).z);
+				_normal(size,Eigen::all) = curNormal;
 				model.F(i).v[j] = size;
 				size++;
 			}
 		}
-		faces.emplace_back(std::array<uint32_t, 3>{model.F(i).v[0], model.F(i).v[1], model.F(i).v[2]});
+		_faces(i,Eigen::all) << model.F(i).v[0], model.F(i).v[1], model.F(i).v[2];
 		vertAdjacency[model.F(i).v[0]].emplace_back(model.F(i).v[1]);
 		vertAdjacency[model.F(i).v[0]].emplace_back(model.F(i).v[2]);
 		vertAdjacency[model.F(i).v[1]].emplace_back(model.F(i).v[0]);

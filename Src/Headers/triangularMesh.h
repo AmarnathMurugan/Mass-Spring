@@ -2,33 +2,35 @@
 #define TRIANGULARMESH_H
 
 #include "includes.h"
-#include<Cy/cyTriMesh.h>
 #include<material.h>
 #include<sceneObject.h>
 
 
 struct Vertdata
 {
-	std::vector<Eigen::Vector3f> position;
-	std::vector<Eigen::Vector3f> normal;
+	MatrixX3fRowMajor position;
+	MatrixX3fRowMajor normal;
 };
 
 
-class TraingularMesh : public SceneObject
+class TriangularMesh : public SceneObject
 {
 public:
 	Vertdata vertexData;
-	std::vector<std::array<uint32_t,3>> faceIndices;
+	MatrixX3UIRowMajor faceIndices;
 	std::unordered_map<int,std::vector<int>> vertAdjacency;
+	bool isDirty = false;
 
 public:
-	TraingularMesh(std::vector<Eigen::Vector3f> _position,
-					std::vector<Eigen::Vector3f> _normal,
-					std::vector<std::array<uint32_t, 3>>& _faces,
+	TriangularMesh():SceneObject(){};
+	TriangularMesh(const MatrixX3fRowMajor& _position,
+					const MatrixX3fRowMajor& _normal,
+					const MatrixX3UIRowMajor& _faces,
 					std::unordered_map<int, std::vector<int>>& _vertAdjacency);
 	void generateBuffers();
+	void Update();
 	virtual void render();
-	~TraingularMesh();
+	~TriangularMesh();
 };
 
 
