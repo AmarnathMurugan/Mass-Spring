@@ -110,3 +110,15 @@ static void importObjModel(std::string objName,
 		vertAdjacency[model.F(i).v[2]].emplace_back(model.F(i).v[1]);
 	}
 }
+
+template<typename T>
+inline T radians(T degree)
+{
+	return degree * (T)PI_F / (T)180;
+}
+
+template<typename T>
+inline T degrees(T radian)
+{
+	return radian * (T)180 / (T)PI_F;
+}

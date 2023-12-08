@@ -9,10 +9,10 @@ Camera::Camera(Eigen::Vector3f lookAtPos, float fov, float near, float far):look
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
-	return this->transform.matrix();
+	//return this->transform.matrix();
 	Eigen::Vector3f test = this->transform.translation();
-	Eigen::Vector3f zaxis = (this->lookAtPosition - this->transform.translation()).normalized();
-	Eigen::Vector3f xaxis = zaxis.cross(Eigen::Vector3f(0, 1, 0)).normalized();
+	Eigen::Vector3f zaxis = -(this->lookAtPosition - this->transform.translation()).normalized();
+	Eigen::Vector3f xaxis = -zaxis.cross(Eigen::Vector3f(0, 1, 0)).normalized();
 	Eigen::Vector3f yaxis = xaxis.cross(zaxis).normalized();
 	Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
 	view(0, 0) = xaxis.x();
@@ -26,7 +26,7 @@ Eigen::Matrix4f Camera::viewMatrix() const
 	view(0, 2) = zaxis.x();
 	view(1, 2) = zaxis.y();
 	view(2, 2) = zaxis.z();
-	view(3, 2) = -zaxis.dot(this->transform.translation());
+	view(2, 3) = -zaxis.dot(this->transform.translation());
 	return view;
 }
 
@@ -36,14 +36,12 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 	float aspect = WindowWidth / (float)WindowHeight;
 	if (this->isPerspective)
 	{
-		float tanHalfFOV = tan(FOV / 2);
-		projection = Eigen::Matrix4f::Identity();
-		projection(0, 0) = 1 / (aspect * tanHalfFOV);
-		projection(1, 1) = 1 / tanHalfFOV;
-		projection(2, 2) = -(farPlane + nearPlane) / (farPlane - nearPlane);
-		projection(2, 3) = -(2 * farPlane * nearPlane) / (farPlane - nearPlane);
-		projection(3, 2) = -1;
-		projection(3, 3) = 0;
+		float tanhalf = tanf(radians(FOV) / 2.0f);
+		projection(0, 0) = 1.0f / (aspect * tanhalf);
+		projection(1, 1) = 1.0f / tanhalf;
+		projection(2, 2) = -(this->farPlane + this->nearPlane) / (this->farPlane - this->nearPlane);
+		projection(2, 3) = -2.0f * this->farPlane * this->nearPlane / (this->farPlane - this->nearPlane);
+		projection(3, 2) = -1.0f;
 	}
 	else
 	{

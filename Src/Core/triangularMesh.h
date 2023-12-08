@@ -21,7 +21,8 @@ public:
 	bool isDirty = false;
 
 private:
-	GLuint VBO = GL_INVALID_INDEX, VAO = GL_INVALID_INDEX, EBO = GL_INVALID_INDEX;
+	GLuint VAO = GL_INVALID_INDEX, EBO = GL_INVALID_INDEX;
+	GLuint VBO[2] = { GL_INVALID_INDEX, GL_INVALID_INDEX };
 
 public:
 	TriangularMesh():SceneObject(){};

@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <glad/glad.h>
 
-#define GL_INVALID_INDEX -1
+#define GL_INVALID_INDEX 0xFFFFFFFF
 
 
 const float  PI_F = 3.14159265358979f;

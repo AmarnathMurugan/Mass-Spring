@@ -8,5 +8,5 @@ in vec3 fragNormal;
 
 void main()
 {
-	color = vec4(mix(uDiffuseColor,fragNormal,1-0.99),1.0);
+	color = vec4(mix(uDiffuseColor,fragNormal,0.99),1.0);
 }
