@@ -9,7 +9,7 @@ class DirectionalLight : public Component
 public:
 	DirectionalLight() :intensity(1) {}
 	void Start() {}
-	void Update() {}
+	void update() {}
 	void RotateLight(float x, float y);
 public:
 	float intensity;

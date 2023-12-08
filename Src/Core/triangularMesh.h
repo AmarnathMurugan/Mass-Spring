@@ -19,6 +19,7 @@ public:
 	MatrixX3UIRowMajor faceIndices;
 	std::unordered_map<int,std::vector<int>> vertAdjacency;
 	bool isDirty = false;
+	Eigen::Vector3f boundingBoxMin, boundingBoxMax;
 
 private:
 	GLuint VAO = GL_INVALID_INDEX, EBO = GL_INVALID_INDEX;
@@ -31,7 +32,8 @@ public:
 					const MatrixX3UIRowMajor& _faces,
 					std::unordered_map<int, std::vector<int>>& _vertAdjacency);
 	void generateBuffers();
-	void Update();
+	void computeBoundingBox(bool normalizeModel = false);
+	void update();
 	virtual void render() override;
 	~TriangularMesh();
 };

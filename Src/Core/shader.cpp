@@ -9,7 +9,7 @@ Shader::Shader(const std::unordered_map<ShaderType, std::string>& _shaderPaths):
 
 GLuint Shader::compileShader(std::string pth, ShaderType shaderType)
 {
-	std::string fileContent = GetStringFromFile(pth);
+	std::string fileContent = CustomUtils::getStringFromFile(pth);
 	if (fileContent == "\0")
 		std::cerr << "\n File not found";
 	const char* shaderContent = fileContent.c_str();

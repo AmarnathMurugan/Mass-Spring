@@ -15,12 +15,12 @@ void SceneObject::Start()
     }
 }
 
-void SceneObject::Update()
+void SceneObject::update()
 {
     for (auto component : components)
     {
         if (component->isEnabled)
-            component->Update();
+            component->update();
     }
 }
 

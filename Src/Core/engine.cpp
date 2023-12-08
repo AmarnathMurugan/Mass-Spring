@@ -30,21 +30,10 @@ void Engine::initScene()
 	this->scene.sceneObjects.emplace_back(mesh);
 	this->scene.sceneObjectMaterialMapping[mesh] = unlitMaterial;
 
-	// Create quad with screen-space coordinates center of screen
-	mesh->vertexData.position.resize(4, 3);
-	mesh->vertexData.position << -0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f,
-		-0.5f, 0.5f, 0.0f;
-	mesh->vertexData.normal.resize(4, 3);
-	mesh->vertexData.normal << 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.f,
-		0.0f, 0.0f, 1.f,
-		0.0f, 0.0f, 1.f;
-	mesh->faceIndices.resize(2, 3);
-	mesh->faceIndices << 0, 1, 2,
-		0, 2, 3;
+	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, mesh->vertexData.position, mesh->vertexData.normal, mesh->faceIndices,mesh->vertAdjacency);
+	mesh->computeBoundingBox(true);
 	mesh->generateBuffers();
+	mesh->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
 }
 
 
@@ -185,7 +174,7 @@ void Engine::update()
 	{
 		if (!this->scene.sceneObjects[i]->isActive)
 			continue;
-		this->scene.sceneObjects[i]->Update();
+		this->scene.sceneObjects[i]->update();
 		if (!this->scene.sceneObjects[i]->isRenderable)
 			continue;
 		this->scene.sceneObjectMaterialMapping[this->scene.sceneObjects[i]]->use();

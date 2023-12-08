@@ -3,31 +3,13 @@
 Camera::Camera(Eigen::Vector3f lookAtPos, float fov, float near, float far):lookAtPosition(lookAtPos),FOV(fov),nearPlane(near),farPlane(far)
 {
 	this->transform.matrix().setIdentity();
-	this->transform.translate(lookAtPos - Eigen::Vector3f(0,0,5));
+	this->transform.translate(lookAtPos + Eigen::Vector3f(0,0,5));
 	this->isPerspective = true;
 }
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
-	//return this->transform.matrix();
-	Eigen::Vector3f test = this->transform.translation();
-	Eigen::Vector3f zaxis = -(this->lookAtPosition - this->transform.translation()).normalized();
-	Eigen::Vector3f xaxis = -zaxis.cross(Eigen::Vector3f(0, 1, 0)).normalized();
-	Eigen::Vector3f yaxis = xaxis.cross(zaxis).normalized();
-	Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
-	view(0, 0) = xaxis.x();
-	view(1, 0) = xaxis.y();
-	view(2, 0) = xaxis.z();
-	view(3, 0) = -xaxis.dot(this->transform.translation());
-	view(0, 1) = yaxis.x();
-	view(1, 1) = yaxis.y();
-	view(2, 1) = yaxis.z();
-	view(3, 1) = -yaxis.dot(this->transform.translation());
-	view(0, 2) = zaxis.x();
-	view(1, 2) = zaxis.y();
-	view(2, 2) = zaxis.z();
-	view(2, 3) = -zaxis.dot(this->transform.translation());
-	return view;
+	return this->transform.matrix().inverse();
 }
 
 Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
@@ -36,7 +18,7 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 	float aspect = WindowWidth / (float)WindowHeight;
 	if (this->isPerspective)
 	{
-		float tanhalf = tanf(radians(FOV) / 2.0f);
+		float tanhalf = tanf(CustomUtils::radians(FOV) / 2.0f);
 		projection(0, 0) = 1.0f / (aspect * tanhalf);
 		projection(1, 1) = 1.0f / tanhalf;
 		projection(2, 2) = -(this->farPlane + this->nearPlane) / (this->farPlane - this->nearPlane);
@@ -79,6 +61,10 @@ void Camera::rotateCamera(const Eigen::Vector2d& delta)
 	dir.y() = r * cos(theta);
 	dir.z() = r * sin(theta) * sin(phi);
 	this->transform.translation() = lookAtPosition + dir;
+	// set rotation to theta and phi
+	Eigen::Matrix3f rot = Eigen::Matrix3f::Zero();
+	rot = Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(phi, Eigen::Vector3f::UnitZ());
+this->transform.linear() = rot;
 }
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
@@ -89,10 +75,11 @@ void Camera::panCamera(const Eigen::Vector2d& delta)
 	Eigen::Vector3f right = dir.cross(up);
 	right.normalize();
 	Eigen::Vector3f translation = Eigen::Vector3f::Zero();
-	translation -= right * delta.x();
-	translation += up * delta.y();
-	this->transform.translate(translation * 0.01);
-	lookAtPosition += translation *0.01;
+	translation += right * delta.x();
+	translation -= up * delta.y();
+	translation *= 0.01;
+	this->transform.translate(translation);
+	lookAtPosition += translation;
 }
 
 void Camera::moveAlongRay(float dist)

@@ -43,9 +43,23 @@ void TriangularMesh::generateBuffers()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0) ;
 }
 
-void TriangularMesh::Update()
+void TriangularMesh::computeBoundingBox(bool normalizeModel)
 {
-	SceneObject::Update();
+	this->boundingBoxMin = vertexData.position.colwise().minCoeff();
+	this->boundingBoxMax = vertexData.position.colwise().maxCoeff();
+	Eigen::Vector3f center = (this->boundingBoxMin + this->boundingBoxMax) / 2;
+	Eigen::Vector3f size = boundingBoxMax - boundingBoxMin;
+	float scale = 1.0f;
+	if (normalizeModel)
+	{
+		scale = 1.0f / size.maxCoeff();
+		vertexData.position = (vertexData.position.rowwise() - center.transpose()) * scale;
+	}
+}
+
+void TriangularMesh::update()
+{
+	SceneObject::update();
 	if (isDirty)
 	{		
 		// recalculate face normals and update buffer in parallel
