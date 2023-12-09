@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Do not ignore obj files within Src i.e don't exclude 3D models
-!Src/**/*.obj
+!resources/**/*.obj
