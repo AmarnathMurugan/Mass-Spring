@@ -138,10 +138,13 @@ namespace CustomUtils
 		return std::abs(a - b) < eps;
 	};
 
-	template<typename T>
-	static Eigen::Vector3f sphericalToCartesian(T theta, T phi)
+	static Eigen::Vector3f spherePoint(float phi, float theta)
 	{
-		return Eigen::Vector3f(std::sin(theta) * std::cos(phi),  std::cos(theta), std::sin(theta) * std::sin(phi) );
+		return {
+			std::cos(theta) * std::sin(phi),
+			std::sin(theta),
+			std::cos(theta) * std::cos(phi),
+		};
 	}
 
 	static Eigen::Quaternionf eulerToQuaternion(Eigen::Vector3f euler)

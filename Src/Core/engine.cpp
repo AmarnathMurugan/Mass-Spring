@@ -105,6 +105,9 @@ void Engine::handleEvent(const GLEQevent& event)
 				break;
 			}
 			break;
+		case GLEQ_SCROLLED:
+			this->scene.cam->moveAlongRay(-event.scroll.y);
+			break;	
 	}
 }
 

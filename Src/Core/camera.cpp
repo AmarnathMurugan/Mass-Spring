@@ -4,36 +4,17 @@ Camera::Camera(Eigen::Vector3f lookAtPos, float fov, float near, float far):look
 {
 	this->transform.matrix().setIdentity();
 	this->distance = 5;
-	this->theta = PI_F / 2.0f;
-	this->phi = 0;
-	Eigen::Vector3f test = CustomUtils::sphericalToCartesian(this->theta, this->phi);
-	this->transform.translation() = lookAtPosition + test * distance;
+	this->theta = this->phi = 0;
+	Eigen::Vector3f test = CustomUtils::spherePoint(this->phi, this->theta);
+	this->transform.translation() = this->lookAtPosition + CustomUtils::spherePoint(this->phi,this->theta) * this->distance;
+	this->rotation = Eigen::Vector3f(this->theta,-this->phi,0.0f);
 	this->isPerspective = true;
 }
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
-	Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
-
-	Eigen::Vector3f eye = this->transform.translation();
-	Eigen::Vector3f center = this->lookAtPosition;
-	Eigen::Vector3f up = Eigen::Vector3f(0, 1, 0);
-	Eigen ::Vector3f f = (center - eye).normalized();
-	Eigen::Vector3f s = f.cross(up).normalized();
-	Eigen::Vector3f u = s.cross(f);
-	view(0, 0) = s.x();
-	view(1, 0) = s.y();
-	view(2, 0) = s.z();
-	view(0, 1) = u.x();
-	view(1, 1) = u.y();
-	view(2, 1) = u.z();
-	view(0, 2) = -f.x();
-	view(1, 2) = -f.y();
-	view(2, 2) = -f.z();
-	view(0, 3) = -s.dot(eye);
-	view(1, 3) = -u.dot(eye);
-	view(2, 3) = f.dot(eye);
-	return view;
+	Transform t = Transform::Identity();
+	return t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->transform.translation()).matrix();
 
 
 }
@@ -72,30 +53,22 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 
 void Camera::rotateCamera(const Eigen::Vector2d& delta)
 {
-	// Rotate around lookAtPosition using spherical coordinates	
-	this->theta += delta.y() * 0.001;
-	this->phi -= delta.x() * 0.001;
-	if (theta < 0.01)
-		theta = 0.01;
-	if (theta > PI_F - 0.01)
-		theta = PI_F - 0.01;
-	Eigen::Vector3f dir = CustomUtils::sphericalToCartesian(this->theta, phi);
-	this->transform.translation() = lookAtPosition + dir * distance;
+	float sensitivity = 0.005f;
+	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * sensitivity, -PI_F * 0.5f, PI_F * 0.5f);
+	this->phi = this->phi - delta.x() * sensitivity;
+	this->transform.translation() = this->lookAtPosition + CustomUtils::spherePoint(this->phi, this->theta) * this->distance;
+	this->rotation = Eigen::Vector3f(this->theta, -this->phi, 0.0f);	
 }
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
 {
-	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
-	dir.normalize();
-	Eigen::Vector3f up = Eigen::Vector3f(0, 1, 0);
-	Eigen::Vector3f right = dir.cross(up);
-	right.normalize();
-	Eigen::Vector3f translation = Eigen::Vector3f::Zero();
-	translation += right * delta.x();
-	translation += up * delta.y();
-	translation *= 0.001 * distance;
-	this->transform.translate(translation);
-	lookAtPosition += translation;
+	float sensitivity = 0.005f;
+	const Eigen::Vector3f dir = Eigen::Vector3f(-delta.x(), delta.y(),0.0) * sensitivity / this->distance;
+	Transform t = Transform::Identity();
+	const  Eigen::Matrix4f view =
+		t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->lookAtPosition).matrix();
+	this->lookAtPosition += view.block<3, 3>(0, 0).transpose() * dir;
+	rotateCamera(Eigen::Vector2d(0,0));
 }
 
 void Camera::moveAlongRay(float delta)
