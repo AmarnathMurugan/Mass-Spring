@@ -18,5 +18,7 @@ public:
 	bool isPerspective = true;
 private:
 	Eigen::Vector3f lookAtPosition;
-	float FOV,nearPlane,farPlane;
+	float theta // angle around y axis
+		, phi; // angle around x axis
+	float FOV,nearPlane,farPlane,distance;
 };

@@ -120,4 +120,34 @@ namespace CustomUtils
 	{
 		return radian * (T)180 / (T)PI_F;
 	}
+
+	template<typename T>
+	inline T clamp(T val, T min, T max)
+	{
+		if (val < min)
+			return min;
+		else if (val > max)
+			return max;
+		else
+			return val;
+	}
+
+	template<typename T>
+	inline bool epsEqual(T a, T b, T eps = 0.0001)
+	{
+		return std::abs(a - b) < eps;
+	};
+
+	template<typename T>
+	static Eigen::Vector3f sphericalToCartesian(T theta, T phi)
+	{
+		return Eigen::Vector3f(std::sin(theta) * std::cos(phi),  std::cos(theta), std::sin(theta) * std::sin(phi) );
+	}
+
+	static Eigen::Quaternionf eulerToQuaternion(Eigen::Vector3f euler)
+	{
+		return Eigen::AngleAxisf(euler.x(), Eigen::Vector3f::UnitX()) *
+			Eigen::AngleAxisf(euler.y(), Eigen::Vector3f::UnitY()) *
+			Eigen::AngleAxisf(euler.z(), Eigen::Vector3f::UnitZ());
+	}
 }
