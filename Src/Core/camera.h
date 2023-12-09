@@ -10,7 +10,7 @@ public:
 	Eigen::Matrix4f viewMatrix() const;
 	Eigen::Matrix4f projectionMatrix(int WindowWidth, int WindowHeight) const;
 	void rotateCamera(const Eigen::Vector2d& delta);
-	void moveAlongRay(float dist);
+	void zoom(float dist);
 	void panCamera(const Eigen::Vector2d& delta);
 	void switchProjectionType(bool isPerspective = true);
 

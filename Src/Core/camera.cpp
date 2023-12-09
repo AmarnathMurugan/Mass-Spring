@@ -34,7 +34,7 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 	}
 	else
 	{
-		float zoom = 1.0f;
+		float zoom = CustomUtils::radians(this->FOV) * this->distance;
 		float left = -aspect * zoom * 0.5f;
 		float right = aspect * zoom * 0.5f;
 		float bottom = -zoom * 0.5f;
@@ -62,7 +62,7 @@ void Camera::rotateCamera(const Eigen::Vector2d& delta)
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
 {
-	float sensitivity = 0.005f;
+	float sensitivity = 0.002f;
 	const Eigen::Vector3f dir = Eigen::Vector3f(-delta.x(), delta.y(),0.0) * sensitivity / this->distance;
 	Transform t = Transform::Identity();
 	const  Eigen::Matrix4f view =
@@ -71,7 +71,7 @@ void Camera::panCamera(const Eigen::Vector2d& delta)
 	rotateCamera(Eigen::Vector2d(0,0));
 }
 
-void Camera::moveAlongRay(float delta)
+void Camera::zoom(float delta)
 {
 	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
 	distance += delta * 0.1;

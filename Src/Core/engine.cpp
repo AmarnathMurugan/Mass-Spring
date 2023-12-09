@@ -106,7 +106,7 @@ void Engine::handleEvent(const GLEQevent& event)
 			}
 			break;
 		case GLEQ_SCROLLED:
-			this->scene.cam->moveAlongRay(-event.scroll.y);
+			this->scene.cam->zoom(-event.scroll.y * 1.5f);
 			break;	
 	}
 }
@@ -147,7 +147,7 @@ void Engine::handleInteractions()
 		this->scene.cam->rotateCamera(this->mouseState.deltaPos);
 	
 	if(isAltPressed && this->mouseState.isRightDown)
-		this->scene.cam->moveAlongRay(this->mouseState.deltaPos.y() * 0.2);
+		this->scene.cam->zoom(this->mouseState.deltaPos.y() * 0.2);
 
 	if(isAltPressed && this->mouseState.isMiddleDown)
 		this->scene.cam->panCamera(this->mouseState.deltaPos);
