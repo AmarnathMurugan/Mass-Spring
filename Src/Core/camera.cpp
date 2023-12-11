@@ -62,7 +62,7 @@ void Camera::rotateCamera(const Eigen::Vector2d& delta)
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
 {
-	float sensitivity = 0.002f;
+	float sensitivity = 0.004f;
 	const Eigen::Vector3f dir = Eigen::Vector3f(-delta.x(), delta.y(),0.0) * sensitivity / this->distance;
 	Transform t = Transform::Identity();
 	const  Eigen::Matrix4f view =

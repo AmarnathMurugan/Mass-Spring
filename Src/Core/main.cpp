@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
 		std::cerr << "\nUnable to initialize GLAD";
 		return -1;
 	}
+	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 
 	// Setup engine
 	Engine engine(window);

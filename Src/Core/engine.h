@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "triangularMesh.h"
 #include "unlitMaterial.h"
+#include "blinnPhongMaterial.h"
 #include "gleq.h"
 
 
@@ -24,7 +25,7 @@ private:
 	struct Scene
 	{
 		std::vector<std::shared_ptr<SceneObject>> sceneObjects;
-		std::vector<std::shared_ptr<Shader>> shaders;
+		std::unordered_set<std::shared_ptr<Shader>> shaders;
 		std::unordered_map<std::shared_ptr<SceneObject>, std::shared_ptr<Material>> sceneObjectMaterialMapping;
 		std::unordered_map<std::shared_ptr<Shader>,std::unordered_set<std::shared_ptr<SceneObject>>> shaderSceneObjectMapping;
 		std::shared_ptr<Camera> cam;
@@ -37,6 +38,7 @@ private:
 			{
 				sceneObjectMaterialMapping[sceneObj] = material;
 				shaderSceneObjectMapping[material->shader].insert(sceneObj);
+				shaders.insert(material->shader);
 			}
 		}
 

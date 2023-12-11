@@ -37,6 +37,8 @@ public:
     void setUniform(std::string name, const Eigen::Vector3f& value);
     // Set vec4 uniform
     void setUniform(std::string name, const Eigen::Vector4f& value);
+    // Set mat3 uniform
+    void setUniform(std::string name, const Eigen::Matrix3f& value);
     // Set mat4 uniform
     void setUniform(std::string name, const Eigen::Matrix4f& value);
 

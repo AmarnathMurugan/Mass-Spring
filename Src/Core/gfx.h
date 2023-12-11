@@ -19,9 +19,21 @@ struct RenderState
 	Eigen::Matrix4f viewMatrix,projectionMatrix;
 	Eigen::Vector3f cameraPosition;
 	Eigen::Vector3f ambientColor = Eigen::Vector3f(1,1,1);
-	Eigen::Vector3f clearColor = Eigen::Vector3f(0,0,0);
+	Eigen::Vector3f clearColor = Eigen::Vector3f(180,230,225)/225.0;
 	int windowWidth = 960,windowHeight = 540;
-	float ambientIntensity = 0.2f;
+	float ambientIntensity = 0.7f;
+
+	Eigen::Vector3f lightDir = Eigen::Vector3f(1,1,0);
+	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
+	float lightIntensity = 0.8f;
+
+};
+
+struct SurfaceProperties
+{
+	Eigen::Vector3f diffuseColor = Eigen::Vector3f(1,1,1);
+	Eigen::Vector3f specularColor = Eigen::Vector3f(1,1,1);
+	float shininess = 32.0f;
 };
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

@@ -121,6 +121,11 @@ void Shader::setUniform(std::string name, const Eigen::Vector4f& value)
 	glUniform4f(this->getUniformLocation(name), value.x(), value.y(), value.z(), value.w()) ;
 }
 
+void Shader::setUniform(std::string name, const Eigen::Matrix3f& value)
+{
+	glUniformMatrix3fv(this->getUniformLocation(name), 1, GL_FALSE, value.data()) ;
+}
+
 void Shader::setUniform(std::string name, const Eigen::Matrix4f& value)
 {
 	glUniformMatrix4fv(this->getUniformLocation(name), 1, GL_FALSE, value.data()) ;

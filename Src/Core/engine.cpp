@@ -16,6 +16,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 void Engine::initScene()
 {
 	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f::Zero(), 50);
+
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
 	{
@@ -23,22 +24,36 @@ void Engine::initScene()
 		{ ShaderType::FragmentShader,"resources/Shaders/Unlit/unlit.frag" }
 	});
 
-	this->scene.shaders.emplace_back(unlitShader);
-	std::shared_ptr<UnlitMaterial> unlitMaterial = std::make_shared<UnlitMaterial>(unlitShader, Eigen::Vector3f(1.0f, 0.5f, 0.2f));
+	std::shared_ptr<Shader> blinnPhongShader = std::make_shared<Shader>(
+		std::unordered_map<ShaderType, std::string>
+	{
+		{ShaderType::VertexShader, "resources/Shaders/BlinnPhong/blinnPhong.vert"},
+		{ ShaderType::FragmentShader,"resources/Shaders/BlinnPhong/blinnPhong.frag" }
+	});
+	
+
+	SurfaceProperties blinnPhongProperties = {
+		.diffuseColor = Eigen::Vector3f(1.0f, 0.5f, 0.2f),
+		.specularColor = Eigen::Vector3f(1.0f, 1.0f, 1.0f),
+		.shininess = 50.0f,
+	};
+	std::shared_ptr<BlinnPhongMaterial> teapotMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
 
 	std::shared_ptr<TriangularMesh> teapot = std::make_shared<TriangularMesh>();
 	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, teapot->vertexData.position, teapot->vertexData.normal, teapot->faceIndices,teapot->vertAdjacency);
 	teapot->computeBoundingBox(true);
 	teapot->generateBuffers();
 	teapot->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
+	this->scene.addSceneObject(teapot, teapotMat);
 
-	this->scene.addSceneObject(teapot, unlitMaterial);
-
+	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
+	blinnPhongProperties.shininess = 200.0f;
+	std::shared_ptr<BlinnPhongMaterial> planeMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
 	std::shared_ptr<TriangularMesh> plane = std::make_shared<TriangularMesh>();
 	CustomUtils::importObjModel("resources/Models/plane.obj", false, plane->vertexData.position, plane->vertexData.normal, plane->faceIndices, plane->vertAdjacency);
 	plane->generateBuffers();
 	plane->transform.translation() -= Eigen::Vector3f(0, 0.25f, 0);
-	this->scene.addSceneObject(plane, unlitMaterial);
+	this->scene.addSceneObject(plane, planeMat);
 
 }
 
@@ -167,16 +182,33 @@ void Engine::update()
 
 	this->handleInteractions();
 
+	// Set global render state parameters
+	this->scene.renderState.viewMatrix = this->scene.cam->viewMatrix();
+	this->scene.renderState.projectionMatrix = this->scene.cam->projectionMatrix(this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
+	Eigen::Matrix4f VP = this->scene.renderState.projectionMatrix * this->scene.renderState.viewMatrix;
+
 	// iterate through all shaders and render the scene objects
 	for (auto& [shader, sceneObjs] : this->scene.shaderSceneObjectMapping)
 	{
 		shader->bind();
-		Eigen::Matrix4f viewMatrix = this->scene.cam->viewMatrix();
-		Eigen::Matrix4f projectionMatrix = this->scene.cam->projectionMatrix(this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
-		Eigen::Matrix4f VP = projectionMatrix * viewMatrix;
-		shader->setUniform("uView", viewMatrix);
-		shader->setUniform("uProjection", projectionMatrix);
+
+		// Set matrix uniforms
+		shader->setUniform("uView", this->scene.renderState.viewMatrix);
+		shader->setUniform("uProjection", this->scene.renderState.projectionMatrix);
 		shader->setUniform("uVP", VP);
+
+		// Set lighting uniforms
+		shader->setUniform("uLightDir", this->scene.renderState.lightDir);
+		Eigen::Vector4f lightDir4f;
+		lightDir4f.head<3>() = this->scene.renderState.lightDir;
+		lightDir4f.w() = 0.0f;
+		Eigen::Vector3f viewSpaceLightDir = (this->scene.renderState.viewMatrix * lightDir4f).head<3>();
+		shader->setUniform("uViewLightDir", viewSpaceLightDir.normalized());
+		shader->setUniform("uLightColor", this->scene.renderState.lightColor);
+		shader->setUniform("uLightIntensity", this->scene.renderState.lightIntensity);
+		shader->setUniform("uAmbientColor", this->scene.renderState.ambientColor);
+		shader->setUniform("uAmbientIntensity", this->scene.renderState.ambientIntensity);
+
 		for (auto& sceneObj : sceneObjs)
 		{
 			if (!sceneObj->isActive)
@@ -185,7 +217,14 @@ void Engine::update()
 			if (!sceneObj->isRenderable)
 				continue;
 			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
-			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uModel", sceneObj->getModelMatrix());
+			Eigen::Matrix4f modelMatrix = sceneObj->getModelMatrix();
+			Eigen::Matrix4f MV = this->scene.renderState.viewMatrix * modelMatrix;
+			Eigen::Matrix4f MVP = VP * modelMatrix;
+			Eigen::Matrix3f normalMatrix = MV.block<3, 3>(0, 0).inverse().transpose();
+			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uModel", modelMatrix);
+			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uMV", MV);
+			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uMVP", MVP);
+			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uNormalMatrix", normalMatrix);
 			sceneObj->render();
 		}
 	}

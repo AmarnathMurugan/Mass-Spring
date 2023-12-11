@@ -180,6 +180,7 @@
     <ClInclude Include="Src\Headers\Custom\ObjModel.h" />
     <ClInclude Include="Src\Headers\Custom\custom_utils.h" />
     <ClInclude Include="Src\Headers\Custom\sceneObject.h" />
+    <ClInclude Include="Src\Materials\blinnPhongMaterial.h" />
     <ClInclude Include="Src\Materials\unlitMaterial.h" />
   </ItemGroup>
   <ItemGroup>
@@ -192,7 +193,12 @@
     <ClCompile Include="Src\Core\shader.cpp" />
     <ClCompile Include="Src\Core\triangularMesh.cpp" />
     <ClCompile Include="Src\Deps\glad\glad.c" />
+    <ClCompile Include="Src\Materials\blinnPhongMaterial.cpp" />
     <ClCompile Include="Src\Materials\unlitMaterial.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\Shaders\BlinnPhong\blinnPhong.frag" />
+    <None Include="resources\Shaders\BlinnPhong\blinnPhong.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
