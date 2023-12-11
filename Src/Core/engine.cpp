@@ -26,15 +26,20 @@ void Engine::initScene()
 	this->scene.shaders.emplace_back(unlitShader);
 	std::shared_ptr<UnlitMaterial> unlitMaterial = std::make_shared<UnlitMaterial>(unlitShader, Eigen::Vector3f(1.0f, 0.5f, 0.2f));
 
-	std::shared_ptr<TriangularMesh> mesh = std::make_shared<TriangularMesh>();
-	this->scene.sceneObjects.emplace_back(mesh);
-	this->scene.sceneObjectMaterialMapping[mesh] = unlitMaterial;
-	this->scene.shaderSceneObjectMapping[unlitShader].insert(mesh);
+	std::shared_ptr<TriangularMesh> teapot = std::make_shared<TriangularMesh>();
+	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, teapot->vertexData.position, teapot->vertexData.normal, teapot->faceIndices,teapot->vertAdjacency);
+	teapot->computeBoundingBox(true);
+	teapot->generateBuffers();
+	teapot->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
 
-	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, mesh->vertexData.position, mesh->vertexData.normal, mesh->faceIndices,mesh->vertAdjacency);
-	mesh->computeBoundingBox(true);
-	mesh->generateBuffers();
-	mesh->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
+	this->scene.addSceneObject(teapot, unlitMaterial);
+
+	std::shared_ptr<TriangularMesh> plane = std::make_shared<TriangularMesh>();
+	CustomUtils::importObjModel("resources/Models/plane.obj", false, plane->vertexData.position, plane->vertexData.normal, plane->faceIndices, plane->vertAdjacency);
+	plane->generateBuffers();
+	plane->transform.translation() -= Eigen::Vector3f(0, 0.25f, 0);
+	this->scene.addSceneObject(plane, unlitMaterial);
+
 }
 
 

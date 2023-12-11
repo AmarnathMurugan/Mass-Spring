@@ -30,10 +30,20 @@ private:
 		std::shared_ptr<Camera> cam;
 		RenderState renderState;
 
+		void addSceneObject(std::shared_ptr<SceneObject> sceneObj, std::shared_ptr<Material> material = nullptr)
+		{
+			sceneObjects.push_back(sceneObj);
+			if (material)
+			{
+				sceneObjectMaterialMapping[sceneObj] = material;
+				shaderSceneObjectMapping[material->shader].insert(sceneObj);
+			}
+		}
+
 		void clear()
 		{
-			for(auto& s : shaderSceneObjectMapping)			
-				s.second.clear();
+			for (auto& [shader, sceneObjs] : shaderSceneObjectMapping)
+				sceneObjs.clear();
 			shaderSceneObjectMapping.clear();
 			sceneObjectMaterialMapping.clear();
 			sceneObjects.clear();
