@@ -29,6 +29,7 @@ void Engine::initScene()
 	std::shared_ptr<TriangularMesh> mesh = std::make_shared<TriangularMesh>();
 	this->scene.sceneObjects.emplace_back(mesh);
 	this->scene.sceneObjectMaterialMapping[mesh] = unlitMaterial;
+	this->scene.shaderSceneObjectMapping[unlitShader].insert(mesh);
 
 	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, mesh->vertexData.position, mesh->vertexData.normal, mesh->faceIndices,mesh->vertAdjacency);
 	mesh->computeBoundingBox(true);
@@ -161,28 +162,27 @@ void Engine::update()
 
 	this->handleInteractions();
 
-	// iterate through all shaders and set transformation matrices
-	for (int j = 0; j < this->scene.shaders.size(); j++)
+	// iterate through all shaders and render the scene objects
+	for (auto& [shader, sceneObjs] : this->scene.shaderSceneObjectMapping)
 	{
-		this->scene.shaders[j]->bind();
+		shader->bind();
 		Eigen::Matrix4f viewMatrix = this->scene.cam->viewMatrix();
 		Eigen::Matrix4f projectionMatrix = this->scene.cam->projectionMatrix(this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
 		Eigen::Matrix4f VP = projectionMatrix * viewMatrix;
-		this->scene.shaders[j]->setUniform("uView", viewMatrix);
-		this->scene.shaders[j]->setUniform("uProjection", projectionMatrix);
-		this->scene.shaders[j]->setUniform("uVP", VP);
-	}
-
-	for (int i = 0; i < this->scene.sceneObjects.size(); i++)
-	{
-		if (!this->scene.sceneObjects[i]->isActive)
-			continue;
-		this->scene.sceneObjects[i]->update();
-		if (!this->scene.sceneObjects[i]->isRenderable)
-			continue;
-		this->scene.sceneObjectMaterialMapping[this->scene.sceneObjects[i]]->use();
-		this->scene.sceneObjectMaterialMapping[this->scene.sceneObjects[i]]->shader->setUniform("uModel", this->scene.sceneObjects[i]->getModelMatrix());
-		this->scene.sceneObjects[i]->render();
+		shader->setUniform("uView", viewMatrix);
+		shader->setUniform("uProjection", projectionMatrix);
+		shader->setUniform("uVP", VP);
+		for (auto& sceneObj : sceneObjs)
+		{
+			if (!sceneObj->isActive)
+				continue;
+			sceneObj->update();
+			if (!sceneObj->isRenderable)
+				continue;
+			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
+			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uModel", sceneObj->getModelMatrix());
+			sceneObj->render();
+		}
 	}
 }
 

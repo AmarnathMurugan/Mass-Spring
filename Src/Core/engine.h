@@ -26,14 +26,18 @@ private:
 		std::vector<std::shared_ptr<SceneObject>> sceneObjects;
 		std::vector<std::shared_ptr<Shader>> shaders;
 		std::unordered_map<std::shared_ptr<SceneObject>, std::shared_ptr<Material>> sceneObjectMaterialMapping;
+		std::unordered_map<std::shared_ptr<Shader>,std::unordered_set<std::shared_ptr<SceneObject>>> shaderSceneObjectMapping;
 		std::shared_ptr<Camera> cam;
 		RenderState renderState;
 
 		void clear()
 		{
+			for(auto& s : shaderSceneObjectMapping)			
+				s.second.clear();
+			shaderSceneObjectMapping.clear();
+			sceneObjectMaterialMapping.clear();
 			sceneObjects.clear();
 			shaders.clear();
-			sceneObjectMaterialMapping.clear();
 			cam.reset();
 		}
 	}scene;
