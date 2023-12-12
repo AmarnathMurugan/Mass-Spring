@@ -16,7 +16,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f::Zero(), 50);
+	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,2,0), 10 ,45);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -49,7 +49,7 @@ void Engine::initScene()
 
 	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
 	loadTetMesh("resources/Models/TetMesh/Armadillo/Armadillo", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
-	tetMesh->initTetMesh();
+	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,4.0f,0.0f));
 	this->scene.addSceneObject(tetMesh, teapotMat);
 
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
@@ -58,7 +58,7 @@ void Engine::initScene()
 	std::shared_ptr<TriangularMesh> plane = std::make_shared<TriangularMesh>();
 	CustomUtils::importObjModel("resources/Models/plane.obj", false, plane->vertexData.position, plane->vertexData.normal, plane->faceIndices, plane->vertAdjacency);
 	plane->generateBuffers();
-	plane->transform.translation() -= Eigen::Vector3f(0, 0.25f, 0);
+	plane->transform.scale(Eigen::Vector3f(3, 3, 3));
 	this->scene.addSceneObject(plane, planeMat);
 
 }

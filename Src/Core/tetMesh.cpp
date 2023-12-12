@@ -77,13 +77,20 @@ void TetMesh::computeNormals()
 	this->tetData.normals.rowwise().normalize();
 }
 
-void TetMesh::initTetMesh()
+void TetMesh::initTetMesh(Eigen::Vector3f offset)
 {
 	this->normalizeModel();
+	if (offset.squaredNorm() > 0.0f)
+		this->offsetVertices(offset);
 	this->tetData.normals.resizeLike(this->tetData.vertices);
 	this->computeNormals();
 	this->setBuffers();
 
+}
+
+void TetMesh::offsetVertices(const Eigen::Vector3f& offset)
+{
+	this->tetData.vertices.rowwise() += offset.transpose();
 }
 
 void TetMesh::render()

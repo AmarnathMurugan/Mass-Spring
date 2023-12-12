@@ -27,7 +27,7 @@ struct RenderState
 	int windowWidth = 960,windowHeight = 540;
 	float ambientIntensity = 0.7f;
 
-	Eigen::Vector3f lightDir = Eigen::Vector3f(1,1,0);
+	Eigen::Vector3f lightDir = Eigen::Vector3f(0,1,1);
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
 	float lightIntensity = 1.0f;
 

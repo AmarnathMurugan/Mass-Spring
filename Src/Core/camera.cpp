@@ -1,9 +1,8 @@
 #include "camera.h"
 
-Camera::Camera(Eigen::Vector3f lookAtPos, float fov, float near, float far):lookAtPosition(lookAtPos),FOV(fov),nearPlane(near),farPlane(far)
+Camera::Camera(Eigen::Vector3f lookAtPos,float _distance, float fov, float near, float far):lookAtPosition(lookAtPos),FOV(fov),nearPlane(near),farPlane(far),distance(_distance)
 {
 	this->transform.matrix().setIdentity();
-	this->distance = 5;
 	this->theta = this->phi = 0;
 	Eigen::Vector3f test = CustomUtils::spherePoint(this->phi, this->theta);
 	this->transform.translation() = this->lookAtPosition + CustomUtils::spherePoint(this->phi,this->theta) * this->distance;

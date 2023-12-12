@@ -6,7 +6,7 @@
 class Camera : public SceneObject
 {
 public:
-	Camera(Eigen::Vector3f lookAtPos = Eigen::Vector3f::Zero(), float fov = 45, float near = 0.01, float far = 1000);
+	Camera(Eigen::Vector3f lookAtPos = Eigen::Vector3f::Zero(), float distance = 5, float fov = 45, float near = 0.01, float far = 1000);
 	Eigen::Matrix4f viewMatrix() const;
 	Eigen::Matrix4f projectionMatrix(int WindowWidth, int WindowHeight) const;
 	void rotateCamera(const Eigen::Vector2d& delta);

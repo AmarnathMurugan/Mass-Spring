@@ -10,7 +10,8 @@ public:
 	void setBuffers();
 	void update();
 	void computeNormals();
-	void initTetMesh();
+	void initTetMesh(Eigen::Vector3f offset = Eigen::Vector3f::Zero());
+	void offsetVertices(const Eigen::Vector3f& offset);
 	virtual void render() override;
 
 public:

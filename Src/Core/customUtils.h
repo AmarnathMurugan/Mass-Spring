@@ -166,6 +166,12 @@ namespace CustomUtils
 		};
 	}
 
+	static Eigen::Vector2f pointSphere(const Eigen::Vector3f& p)
+	{
+		return { std::atan2(p.y(), std::sqrt(p.x() * p.x() + p.z() * p.z())),
+				 std::atan2(p.x(), p.z()) + PI_F * 0.5f };
+	}
+
 	static Eigen::Quaternionf eulerToQuaternion(Eigen::Vector3f euler)
 	{
 		return Eigen::AngleAxisf(euler.x(), Eigen::Vector3f::UnitX()) *
