@@ -3,14 +3,13 @@
 void TetMesh::normalizeModel()
 {
 	// Compute bounding box
-	/*Eigen::Vector3f min, max;
-	min = this->tetData.vertices.rowwise().minCoeff();
-	max = this->tetData.vertices.rowwise().maxCoeff();
+	Eigen::Vector3f min, max;
+	min = this->tetData.vertices.colwise().minCoeff();
+	max = this->tetData.vertices.colwise().maxCoeff();
 	Eigen::Vector3f center = (min + max) / 2;
-	Eigen::Vector3f size = max - min;*/
-	//float scale = 1.0f / 100.0f;
-	//this->tetData.vertices =  this->tetData.vertices.rowwise() * scale;
-	//this->tetData.vertices = (this->tetData.vertices.rowwise() - center.transpose()) * scale;	
+	Eigen::Vector3f size = max - min;
+	float scale = 1.0f / size.maxCoeff();
+	this->tetData.vertices = (this->tetData.vertices.rowwise() - center.transpose()) * scale;	
 }
 
 void TetMesh::setBuffers()
@@ -59,8 +58,8 @@ void TetMesh::update()
 void TetMesh::computeNormals()
 {
 	this->tetData.normals.setZero();
-	Eigen::Vector3i max = this->tetData.faces.rowwise().maxCoeff().cast<int>();
-	for (int i = 0; i < this->tetData.faces.size(); i++)
+	Eigen::Vector<uint32_t,3> max = this->tetData.faces.colwise().maxCoeff();
+	for (int i = 0; i < this->tetData.faces.rows(); i++)
 	{
 		Eigen::Vector3f v1 = this->tetData.vertices.row(this->tetData.faces(i, 0));
 		Eigen::Vector3f v2 = this->tetData.vertices.row(this->tetData.faces(i, 1));

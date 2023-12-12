@@ -234,10 +234,28 @@ int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowM
                 boundary_node_index[boundary_element_node[i + j * boundary_element_order]];
         }
     }
+
+    positions.resize(node_num, 3);
+    positions.setZero();
+    for (int i = 0; i < 3 * node_num; i++)
+    {
+        positions(i / 3, i % 3) = node_xyz[i];
+    }
     
-    positions = Eigen::Map<MatrixX3dRowMajor>(node_xyz, node_num, 3).cast<float>();
-    elementIndices = Eigen::Map<MatrixX4IRowMajor>(element_node, element_num, 4).cast<uint32_t>();
-    bdryFaceIndices = Eigen::Map<MatrixX3IRowMajor>(boundary_element_node, boundary_element_num, 3).cast<uint32_t>();
+    elementIndices.resize(element_num, 4);
+    elementIndices.setZero();
+	for (int i = 0; i < 4 * element_num; i++)
+	{
+		elementIndices(i / 4, i % 4) = element_node[i];
+	}
+
+    bdryFaceIndices.resize(boundary_element_num, 3);
+    bdryFaceIndices.setZero();
+	    for (int i = 0; i < 3 * boundary_element_num; i++)
+    {
+    bdryFaceIndices(i / 3, i % 3) = boundary_element_node[i];
+    }
+
     numBdryVerts = boundary_node_num;
 
     //
