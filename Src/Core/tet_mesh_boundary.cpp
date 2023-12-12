@@ -1,7 +1,7 @@
 #include "tet_mesh_boundary.h"
 
 //****************************************************************************80
-int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, uint32_t& numBdryVerts)
+int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices, uint32_t& numBdryVerts)
 
 //****************************************************************************80
 //
@@ -223,8 +223,9 @@ int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowM
         boundary_element_order = 6;
     }
 
+    int* boundary_interior_verts = new int[boundary_element_num];
     boundary_element_node = tet_mesh_boundary_set(element_order, element_num,
-        element_node, boundary_element_order, boundary_element_num);
+        element_node, boundary_element_order, boundary_element_num, boundary_interior_verts);
 
     for (j = 0; j < boundary_element_num; j++)
     {
@@ -235,26 +236,13 @@ int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowM
         }
     }
 
-    positions.resize(node_num, 3);
-    positions.setZero();
-    for (int i = 0; i < 3 * node_num; i++)
-    {
-        positions(i / 3, i % 3) = node_xyz[i];
-    }
+    positions = Eigen::Map<MatrixX3dRowMajor>(node_xyz, node_num, 3).cast<float>();
     
-    elementIndices.resize(element_num, 4);
-    elementIndices.setZero();
-	for (int i = 0; i < 4 * element_num; i++)
-	{
-		elementIndices(i / 4, i % 4) = element_node[i];
-	}
+    elementIndices = Eigen::Map<MatrixX4IRowMajor>(element_node, element_num, 4).cast<uint32_t>();
 
-    bdryFaceIndices.resize(boundary_element_num, 3);
-    bdryFaceIndices.setZero();
-	    for (int i = 0; i < 3 * boundary_element_num; i++)
-    {
-    bdryFaceIndices(i / 3, i % 3) = boundary_element_node[i];
-    }
+    bdryFaceIndices = Eigen::Map<MatrixX3IRowMajor>(boundary_element_node, boundary_element_num, 3).cast<uint32_t>();
+
+    faceInteriorVertexIndices = Eigen::Map<Eigen::VectorXi>(boundary_interior_verts, boundary_element_num);
 
     numBdryVerts = boundary_node_num;
 
@@ -2980,7 +2968,7 @@ void tet_mesh_boundary_count(int element_order, int element_num,
 //****************************************************************************80
 
 int* tet_mesh_boundary_set(int element_order, int element_num,
-    int element_node[], int boundary_element_order, int boundary_element_num)
+    int element_node[], int boundary_element_order, int boundary_element_num, int* boundary_interior_verts)
 
     //****************************************************************************80
     //
@@ -3166,6 +3154,7 @@ int* tet_mesh_boundary_set(int element_order, int element_num,
             boundary_element_node[1 + boundary_element * boundary_element_order] = element_node[1 + element * element_order];
             boundary_element_node[2 + boundary_element * boundary_element_order] = element_node[2 + element * element_order];
         }
+        boundary_interior_verts[boundary_element] = element_node[f + element * element_order];
         //
         //  For quadratic tetrahedrons, we need to add three more side nodes.
         //

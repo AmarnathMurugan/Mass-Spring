@@ -12,7 +12,7 @@
 
 
 
-int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, uint32_t& numBdryVerts);
+int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices,uint32_t& numBdryVerts);
 char ch_cap(char ch);
 bool ch_eqi(char ch1, char ch2);
 int ch_to_digit(char ch);
@@ -49,6 +49,6 @@ void tet_mesh_boundary_count(int element_order, int element_num,
 	int element_node[], int node_num, int* boundary_node_num,
 	int* boundary_element_num, int boundary_node_mask[]);
 int* tet_mesh_boundary_set(int element_order, int element_num,
-	int element_node[], int boundary_element_order, int boundary_element_num);
+	int element_node[], int boundary_element_order, int boundary_element_num, int* boundary_interior_verts);
 void timestamp();
 

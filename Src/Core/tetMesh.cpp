@@ -64,7 +64,10 @@ void TetMesh::computeNormals()
 		Eigen::Vector3f v1 = this->tetData.vertices.row(this->tetData.faces(i, 0));
 		Eigen::Vector3f v2 = this->tetData.vertices.row(this->tetData.faces(i, 1));
 		Eigen::Vector3f v3 = this->tetData.vertices.row(this->tetData.faces(i, 2));
+		Eigen::Vector3f v4 = this->tetData.vertices.row(this->tetData.faceInteriorVertexIndices(i));
 		Eigen::Vector3f normal = (v2 - v1).cross(v3 - v1).normalized();
+		if(normal.dot(v4 - v1) > 0)
+			normal *= -1;
 		this->tetData.normals.row(this->tetData.faces(i, 0)) += normal;
 		this->tetData.normals.row(this->tetData.faces(i, 1)) += normal;
 		this->tetData.normals.row(this->tetData.faces(i, 2)) += normal;

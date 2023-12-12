@@ -20,6 +20,7 @@ public:
 		MatrixX3fRowMajor normals;
 		MatrixX4UIRowMajor tetrahedra;
 		MatrixX3UIRowMajor faces;
+		Eigen::VectorXi faceInteriorVertexIndices;
 		uint32_t numBdryVertices;
 	}tetData;
 	bool isDirty = false;
