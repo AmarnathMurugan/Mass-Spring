@@ -28,7 +28,7 @@ void TetMesh::setBuffers()
 
 	glGenBuffers(1, &this->EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->tetData.faces.size() * sizeof(unsigned int), this->tetData.faces.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->tetData.faces.size() * sizeof(uint32_t), this->tetData.faces.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO[0]);
 	glEnableVertexAttribArray(0);
@@ -75,9 +75,9 @@ void TetMesh::computeNormals()
 void TetMesh::initTetMesh()
 {
 	this->normalizeModel();
-	this->setBuffers();
 	this->tetData.normals.resizeLike(this->tetData.vertices);
 	this->computeNormals();
+	this->setBuffers();
 
 }
 
@@ -85,5 +85,5 @@ void TetMesh::render()
 {
 	assert(VAO != GL_INVALID_INDEX);
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, this->tetData.faces.rows(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, this->tetData.faces.size(), GL_UNSIGNED_INT, 0);
 }
