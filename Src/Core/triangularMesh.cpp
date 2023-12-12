@@ -64,24 +64,25 @@ void TriangularMesh::update()
 	if (isDirty)
 	{		
 		// recalculate face normals and update buffer in parallel
-		#pragma omp parallel for
+		vertexData.normal.setZero();
 		for (int i = 0; i < faceIndices.size(); i++)
 		{
-			Eigen::Vector3f v1 = vertexData.position(faceIndices(i,0),Eigen::all);
-			Eigen::Vector3f v2 = vertexData.position(faceIndices(i,1),Eigen::all);
-			Eigen::Vector3f v3 = vertexData.position(faceIndices(i,2),Eigen::all);
+			Eigen::Vector3f v1 = vertexData.position.row(faceIndices(i,0));
+			Eigen::Vector3f v2 = vertexData.position.row(faceIndices(i,1));
+			Eigen::Vector3f v3 = vertexData.position.row(faceIndices(i,2));
 			Eigen::Vector3f normal = (v2 - v1).cross(v3 - v1);
-			vertexData.normal(faceIndices(i, 0), Eigen::all) = normal;
-			vertexData.normal(faceIndices(i, 1), Eigen::all) = normal;
-			vertexData.normal(faceIndices(i, 2), Eigen::all) = normal;
+			vertexData.normal.row(faceIndices(i, 0)) += normal;
+			vertexData.normal.row(faceIndices(i, 1)) += normal;
+			vertexData.normal.row(faceIndices(i, 2)) += normal;
 		}		
+		vertexData.normal.rowwise().normalize();
 		isDirty = false;	
+		glBindVertexArray(VAO) ;
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.position.size() * sizeof(float), vertexData.position.data()) ;
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.normal.size() * sizeof(float), vertexData.normal.data()) ;
 	}
-	glBindVertexArray(VAO) ;
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.position.size() * sizeof(float), vertexData.position.data()) ;
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.normal.size() * sizeof(float), vertexData.normal.data()) ;
 }
 
 TriangularMesh::~TriangularMesh()

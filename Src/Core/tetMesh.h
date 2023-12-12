@@ -6,21 +6,25 @@
 class TetMesh : public SceneObject
 {
 public:
-	TetMesh();
-	~TetMesh();
+	void normalizeModel();
+	void setBuffers();
+	void update();
+	void computeNormals();
+	void initTetMesh();
 
-private:
+public:
 	struct TetData
 	{
 		MatrixX3fRowMajor vertices;
+		MatrixX3fRowMajor normals;
+		MatrixX4UIRowMajor tetrahedra;
+		MatrixX3UIRowMajor faces;
+		uint32_t numBdryVertices;
+	}tetData;
+	bool isDirty = false;
 
-	};
+private:
+	GLuint VAO;
+	GLuint VBO[2];
+	GLuint EBO;
 };
-
-TetMesh::TetMesh()
-{
-}
-
-TetMesh::~TetMesh()
-{
-}

@@ -8,9 +8,11 @@
 # include <ctime>
 # include <string>
 # include <unordered_map>
+# include "gfx.h"
 
 
-int loadTetMesh(std::string prefix);
+
+int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, uint32_t& numBdryVerts);
 char ch_cap(char ch);
 bool ch_eqi(char ch1, char ch2);
 int ch_to_digit(char ch);

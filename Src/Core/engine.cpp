@@ -16,7 +16,6 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	loadTetMesh("resources/Models/TetMesh/Dragon/dragon");
 	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f::Zero(), 50);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
@@ -41,12 +40,17 @@ void Engine::initScene()
 	};
 	std::shared_ptr<BlinnPhongMaterial> teapotMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
 
-	std::shared_ptr<TriangularMesh> teapot = std::make_shared<TriangularMesh>();
-	CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, teapot->vertexData.position, teapot->vertexData.normal, teapot->faceIndices,teapot->vertAdjacency);
-	teapot->computeBoundingBox(true);
-	teapot->generateBuffers();
-	teapot->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
-	this->scene.addSceneObject(teapot, teapotMat);
+	//std::shared_ptr<TriangularMesh> teapot = std::make_shared<TriangularMesh>();
+	//CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, teapot->vertexData.position, teapot->vertexData.normal, teapot->faceIndices,teapot->vertAdjacency);
+	//teapot->computeBoundingBox(true);
+	//teapot->generateBuffers();
+	//teapot->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
+	//this->scene.addSceneObject(teapot, teapotMat);
+
+	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
+	loadTetMesh("resources/Models/TetMesh/Dragon/dragon", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.numBdryVertices);
+	tetMesh->initTetMesh();
+	this->scene.addSceneObject(tetMesh, teapotMat);
 
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
 	blinnPhongProperties.shininess = 500.0f;
