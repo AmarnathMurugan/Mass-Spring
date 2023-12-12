@@ -57,8 +57,10 @@ void TetMesh::update()
 
 void TetMesh::computeNormals()
 {
+	CustomUtils::Stopwatch stopwatch("TetMesh::computeNormals()");
 	this->tetData.normals.setZero();
 	Eigen::Vector<uint32_t,3> max = this->tetData.faces.colwise().maxCoeff();
+	#pragma omp parallel for
 	for (int i = 0; i < this->tetData.faces.rows(); i++)
 	{
 		Eigen::Vector3f v1 = this->tetData.vertices.row(this->tetData.faces(i, 0));

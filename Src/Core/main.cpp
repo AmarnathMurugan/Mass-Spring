@@ -36,6 +36,11 @@ int main(int argc, char* argv[])
 	}
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 
+	Eigen::initParallel();
+	int n = Eigen::nbThreads();
+	Eigen::setNbThreads(n);
+
+
 	// Setup engine
 	Engine engine(window);
 	engine.start();

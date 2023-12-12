@@ -29,7 +29,7 @@ struct RenderState
 
 	Eigen::Vector3f lightDir = Eigen::Vector3f(1,1,0);
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
-	float lightIntensity = 0.8f;
+	float lightIntensity = 1.0f;
 
 };
 

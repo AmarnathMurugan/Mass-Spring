@@ -4,9 +4,28 @@
 #include<string>
 #include<Cy/cyTriMesh.h>
 #include "gfx.h"
+#include <chrono>
 
 namespace CustomUtils
 {
+
+	struct Stopwatch {
+		std::chrono::time_point<std::chrono::high_resolution_clock> start;
+		std::string funcName;
+		Stopwatch(std::string _funcName = "")
+		{
+			start = std::chrono::high_resolution_clock::now();
+			funcName = _funcName;
+		};
+
+		~Stopwatch()
+		{
+			auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> duration = end - start;
+			std::cout << "\nTime taken by "<< funcName << " :" << duration.count() << "s";
+		}
+	};
+
 	template<typename T>
 	inline T lerp(T a, T b, T t)
 	{

@@ -254,6 +254,8 @@ int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowM
     delete[] boundary_node_mask;
     delete[] element_node;
     delete[] node_xyz;
+    delete[] boundary_interior_verts;
+
     //
     //  Terminate.
     //
