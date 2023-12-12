@@ -1644,7 +1644,16 @@ double* r8mat_data_read(std::string input_filename, int m, int n)
 
     table = new double[m * n];
 
-    x = new double[5];
+    double* metaData = new double[4];
+    getline(input, line);
+
+    error = s_to_r8vec(line.substr(1), 4, metaData);
+    int lineSize = 4;
+    if(metaData[3]>0)
+        lineSize = 5;
+    delete[] metaData;
+
+    x = new double[lineSize];
 
     j = 0;
 
@@ -1662,7 +1671,7 @@ double* r8mat_data_read(std::string input_filename, int m, int n)
             continue;
         }
 
-        error = s_to_r8vec(line, 5, x);
+        error = s_to_r8vec(line, lineSize, x);
 
         if (error)
         {
