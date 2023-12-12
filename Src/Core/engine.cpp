@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "tet_mesh_boundary.h"
 
 
 Engine::Engine(GLFWwindow* _window): window(_window)
@@ -15,6 +16,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
+	loadTetMesh("resources/Models/TetMesh/Dragon/dragon");
 	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f::Zero(), 50);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
@@ -47,7 +49,7 @@ void Engine::initScene()
 	this->scene.addSceneObject(teapot, teapotMat);
 
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
-	blinnPhongProperties.shininess = 200.0f;
+	blinnPhongProperties.shininess = 500.0f;
 	std::shared_ptr<BlinnPhongMaterial> planeMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
 	std::shared_ptr<TriangularMesh> plane = std::make_shared<TriangularMesh>();
 	CustomUtils::importObjModel("resources/Models/plane.obj", false, plane->vertexData.position, plane->vertexData.normal, plane->faceIndices, plane->vertAdjacency);

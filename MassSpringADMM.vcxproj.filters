@@ -99,6 +99,15 @@
     <ClInclude Include="Src\Deps\gleq.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Core\tetMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Materials\blinnPhongMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\tet_mesh_boundary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Core\camera.cpp">
@@ -131,5 +140,15 @@
     <ClCompile Include="Src\Core\engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Materials\blinnPhongMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\tet_mesh_boundary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\Shaders\BlinnPhong\blinnPhong.frag" />
+    <None Include="resources\Shaders\BlinnPhong\blinnPhong.vert" />
   </ItemGroup>
 </Project>
