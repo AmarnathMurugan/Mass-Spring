@@ -80,3 +80,10 @@ void TetMesh::initTetMesh()
 	this->computeNormals();
 
 }
+
+void TetMesh::render()
+{
+	assert(VAO != GL_INVALID_INDEX);
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, this->tetData.faces.rows(), GL_UNSIGNED_INT, 0);
+}

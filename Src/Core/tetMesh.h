@@ -11,6 +11,7 @@ public:
 	void update();
 	void computeNormals();
 	void initTetMesh();
+	virtual void render() override;
 
 public:
 	struct TetData

@@ -13,7 +13,7 @@ void TriangularMesh::render()
 {
 	assert(VAO != GL_INVALID_INDEX);
 	glBindVertexArray(VAO) ;
-	glDrawElements(GL_TRIANGLES, faceIndices.size() * 3, GL_UNSIGNED_INT, 0) ;
+	glDrawElements(GL_TRIANGLES, faceIndices.size(), GL_UNSIGNED_INT, 0) ;
 }
 
 
