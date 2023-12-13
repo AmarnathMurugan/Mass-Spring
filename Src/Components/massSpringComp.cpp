@@ -74,11 +74,14 @@ void MassSpring::calculateForces()
 		assert(springLength > 0.0);
 		springVector.normalize();
 		// Compute spring force
-		springForces = (this->springStiffness / this->restLengths[i]) * (springLength - restLengths[i]) * springVector;
+		springForces = (this->springStiffness) * (springLength - restLengths[i]) * springVector;
 
 		// Compute damping force
 		Eigen::Vector3f velocityDifference = this->velocity.segment<3>(3 * springs[i].second) - this->velocity.segment<3>(3 * springs[i].first);
 		springForces += this->damping *  velocityDifference.dot(springVector) * springVector;
+		/*if (springForces.squaredNorm() > 100 * 100)
+			springForces = springForces.normalized() * 100;*/
+
 		for (int j = 0; j < 3; j++)
 		{
 			#pragma omp atomic
@@ -123,7 +126,7 @@ void MassSpring::calculateJacobian()
 		float springLength = springVector.norm();
 		assert(springLength > 0.0);
 		// Compute spring force
-		Eigen::Matrix3f Kii = (this->springStiffness / this->restLengths[i]) * (-Eigen::Matrix3f::Identity() +
+		Eigen::Matrix3f Kii = (this->springStiffness) * (-Eigen::Matrix3f::Identity() +
 											(springLength / this->restLengths[i]) * (Eigen::Matrix3f::Identity()
 											- springVector * springVector.transpose() / (springLength* springLength)));
 		
@@ -151,12 +154,12 @@ void MassSpring::calculateJacobian()
 
 void MassSpring::integrate(float dt)
 {
-	Eigen::SparseMatrix<float> A = this->massMatrix - dt * dt * this->jacobian;
-	Eigen::VectorXf b = this->massMatrix * this->velocity + dt * this->force;
+	//dt = dt / 10;
+	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();
+	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force).cast<double>();
 	solver.compute(A);
-	solver.setMaxIterations(20);
-	while((A * this->velocity - b).norm() > 1e-6)
-		this->velocity = solver.solveWithGuess(b, this->velocity);
+	this->velocity = solver.solveWithGuess(b, this->velocity.cast<double>()).cast<float>();
+	//float error = (A * this->velocity - b).norm();
 	this->velocity.segment<3>(0) = Eigen::Vector3f::Zero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->tetData.vertices = this->positions;

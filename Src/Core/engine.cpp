@@ -48,7 +48,7 @@ void Engine::initScene()
 	//this->scene.addSceneObject(teapot, teapotMat);
 
 	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
-	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
+	loadTetMesh("resources/Models/TetMesh/Cube/cube", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
 	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,4.0f,0.0f));
 	this->scene.addSceneObject(tetMesh, teapotMat);
 

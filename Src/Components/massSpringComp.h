@@ -29,13 +29,13 @@ private:
 	std::vector<float> restLengths;
 
 	Eigen::Vector3f gravity = Eigen::Vector3f(0.0f, -9.8f, 0.0f);
-	float springStiffness = 1000.0f;
-	float damping = 10.0f;
-	float totalMass = 16.0f;
+	float springStiffness = 100.0f;
+	float damping = 0.0f;
+	float totalMass = 50.50f;
 
 	Eigen::VectorXf positions,force,velocity;
 	
 	Eigen::SparseMatrix<float> massMatrix,jacobian;
 
-	Eigen::ConjugateGradient<Eigen::SparseMatrix<float>> solver;
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
 };
