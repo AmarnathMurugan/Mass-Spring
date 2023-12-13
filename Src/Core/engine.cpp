@@ -52,6 +52,9 @@ void Engine::initScene()
 	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,4.0f,0.0f));
 	this->scene.addSceneObject(tetMesh, teapotMat);
 
+	std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);
+	tetMesh->AddComponent(massSpring);
+
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
 	blinnPhongProperties.shininess = 500.0f;
 	std::shared_ptr<BlinnPhongMaterial> planeMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
@@ -74,6 +77,7 @@ void Engine::start()
 	}
 	glfwGetCursorPos(this->window, &this->mouseState.prevPos.x(), &this->mouseState.prevPos.y());
 	this->mouseState.curPos = this->mouseState.prevPos;
+	this->physicsSettings.start = std::chrono::high_resolution_clock::now();
 }
 
 void Engine::handleEvent(const GLEQevent& event)
@@ -233,6 +237,19 @@ void Engine::update()
 			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uNormalMatrix", normalMatrix);
 			sceneObj->render();
 		}
+	}
+
+	// Update physics
+	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->physicsSettings.start;
+	if (elapsed.count() > this->physicsSettings.fixedDeltaTime)
+	{
+		for (auto& sceneObj : this->scene.sceneObjects)
+		{
+			if (!sceneObj->isActive)
+				continue;
+			sceneObj->fixedUpdate(this->physicsSettings.fixedDeltaTime);
+		}
+		this->physicsSettings.start = std::chrono::high_resolution_clock::now();
 	}
 }
 

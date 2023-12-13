@@ -6,6 +6,7 @@
 #include "tetMesh.h"
 #include "unlitMaterial.h"
 #include "blinnPhongMaterial.h"
+#include "massSpringComp.h"
 
 
 class Engine
@@ -54,6 +55,12 @@ private:
 			cam.reset();
 		}
 	}scene;
+
+	struct PhysicsSettings
+	{
+		std::chrono::time_point<std::chrono::high_resolution_clock> start;
+		double fixedDeltaTime = 1.0 / 30.0;
+	}physicsSettings;
 
 	struct KeyboardState
 	{

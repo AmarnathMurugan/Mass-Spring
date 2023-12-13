@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Components\massSpringComp.h" />
     <ClInclude Include="Src\Core\camera.h" />
     <ClInclude Include="Src\Core\Component.h" />
     <ClInclude Include="Src\Core\customUtils.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Src\Materials\unlitMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Components\massSpringComp.cpp" />
     <ClCompile Include="Src\Core\camera.cpp" />
     <ClCompile Include="Src\Core\engine.cpp" />
     <ClCompile Include="Src\Core\gfx.cpp" />

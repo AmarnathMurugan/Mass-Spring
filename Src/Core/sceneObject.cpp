@@ -3,7 +3,6 @@
 
 void SceneObject::AddComponent(std::shared_ptr<Component> comp)
 {
-    comp->sceneObject = this;
     components.emplace_back(comp);
 }
 
@@ -22,6 +21,15 @@ void SceneObject::update()
         if (component->isEnabled)
             component->update();
     }
+}
+
+void SceneObject::fixedUpdate(float dt)
+{
+    for (auto component : components)
+    {
+		if (component->isEnabled)
+			component->fixedUpdate(dt);
+	}
 }
 
 Eigen::Matrix4f SceneObject::getModelMatrix()
