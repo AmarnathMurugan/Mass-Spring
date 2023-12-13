@@ -22,6 +22,7 @@ public:
 		MatrixX4UIRowMajor tetrahedra;
 		MatrixX3UIRowMajor faces;
 		Eigen::VectorXi faceInteriorVertexIndices;
+		std::unordered_map<int, std::unordered_set<int>> vertAdjacency;
 		uint32_t numBdryVertices;
 	}tetData;
 	bool isDirty = false;

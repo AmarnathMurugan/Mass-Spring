@@ -90,6 +90,23 @@ void TetMesh::initTetMesh(Eigen::Vector3f offset)
 	this->computeNormals();
 	this->setBuffers();
 
+	// calculate vertex adjacency
+	for (int i = 0; i < this->tetData.tetrahedra.rows(); i++)
+	{
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 0)].emplace(this->tetData.tetrahedra(i, 1));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 0)].emplace(this->tetData.tetrahedra(i, 2));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 0)].emplace(this->tetData.tetrahedra(i, 3));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 1)].emplace(this->tetData.tetrahedra(i, 0));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 1)].emplace(this->tetData.tetrahedra(i, 2));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 1)].emplace(this->tetData.tetrahedra(i, 3));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 2)].emplace(this->tetData.tetrahedra(i, 0));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 2)].emplace(this->tetData.tetrahedra(i, 1));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 2)].emplace(this->tetData.tetrahedra(i, 3));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 3)].emplace(this->tetData.tetrahedra(i, 0));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 3)].emplace(this->tetData.tetrahedra(i, 1));
+		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 3)].emplace(this->tetData.tetrahedra(i, 2));
+	}
+
 }
 
 void TetMesh::offsetVertices(const Eigen::Vector3f& offset)
