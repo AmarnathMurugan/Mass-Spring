@@ -154,8 +154,9 @@ void MassSpring::integrate(float dt)
 	Eigen::SparseMatrix<float> A = this->massMatrix - dt * dt * this->jacobian;
 	Eigen::VectorXf b = this->massMatrix * this->velocity + dt * this->force;
 	solver.compute(A);
-	this->velocity = solver.solveWithGuess(b, this->velocity);
-	float error = (A * this->velocity - b).norm();
+	solver.setMaxIterations(20);
+	while((A * this->velocity - b).norm() > 1e-6)
+		this->velocity = solver.solveWithGuess(b, this->velocity);
 	this->velocity.segment<3>(0) = Eigen::Vector3f::Zero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->tetData.vertices = this->positions;
