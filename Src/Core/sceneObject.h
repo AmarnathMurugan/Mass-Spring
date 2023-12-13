@@ -10,7 +10,7 @@ public:
     virtual void render() {}
     virtual void AddComponent(std::shared_ptr<Component> component);
     void Start();
-    void update();
+    virtual void update();
     void fixedUpdate(float dt = 1/60.0f);
     Eigen::Matrix4f getModelMatrix();
 

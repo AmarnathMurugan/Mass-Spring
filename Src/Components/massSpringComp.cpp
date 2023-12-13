@@ -42,26 +42,26 @@ void MassSpring::Start()
 	velocity.setZero();
 	force.resizeLike(positions);
 
-	this->massInvMatrix.resize(positions.size(), positions.size());
-	this->massInvMatrix.setZero();
-	this->massInvMatrix.reserve(Eigen::VectorXi::Constant(positions.size(), 1));
+
 	calculateMassMatrix();
+	
+	calculateJacobian();
 }
 
 void MassSpring::fixedUpdate(float dt)
 {
-	calculateForces();
-
+	this->calculateForces();
+	this->handleCollisions();
+	this->integrate(dt);
 }
 
 void MassSpring::calculateForces()
 {
-	//CustomUtils::Stopwatch sw("calculateForces");
 	// Iterate through all vertices and apply gravity
 	#pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{		
-		this->force.segment<3>(3 * i) = Eigen::Vector3f(0.0, -9.8, 0.0);
+		this->force.segment<3>(3 * i) = this->gravity;
 	}
 
 	// Iterate through all springs and apply spring forces
@@ -87,6 +87,79 @@ void MassSpring::calculateForces()
 			this->force(3 * springs[i].second + j) -= springForces(j);
 		}		
 	}
+	this->force.segment<3>(0) = Eigen::Vector3f::Zero();
+}
+
+void MassSpring::handleCollisions()
+{
+
+}
+
+void MassSpring::calculateJacobian()
+{
+	bool isFirstTime = this->jacobian.size() == 0;
+
+	if (isFirstTime)
+	{
+			this->jacobian.resize(this->positions.size(), this->positions.size());
+			int maxValence = 0;
+			for (auto& [vert, adjVerts] : this->tetMesh->tetData.vertAdjacency)
+			{
+				maxValence = std::max(maxValence, (int)adjVerts.size());
+			}
+			this->jacobian.reserve(Eigen::VectorXi::Constant(this->positions.size(),maxValence*6));
+			this->jacobian.setZero();
+	}
+	else
+	{
+		this->jacobian.setZero();
+	}
+
+	// Iterate through all springs and caculate jacobian
+	//#pragma omp parallel for
+	for (int i = 0; i < springs.size(); i++)
+	{
+		Eigen::Vector3f springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
+		float springLength = springVector.norm();
+		assert(springLength > 0.0);
+		// Compute spring force
+		Eigen::Matrix3f Kii = (this->springStiffness / this->restLengths[i]) * (-Eigen::Matrix3f::Identity() +
+											(springLength / this->restLengths[i]) * (Eigen::Matrix3f::Identity()
+											- springVector * springVector.transpose() / (springLength* springLength)));
+		
+		// insert matrix into jacobian
+		for (int j = 0; j < 3; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				//#pragma omp atomic
+				this->jacobian.coeffRef(3 * springs[i].first + j, 3 * springs[i].first + k) += Kii(j, k);
+				//#pragma omp atomic
+				this->jacobian.coeffRef(3 * springs[i].second + j, 3 * springs[i].second + k) += Kii(j, k);
+				//#pragma omp atomic
+				this->jacobian.coeffRef(3 * springs[i].first + j, 3 * springs[i].second + k) -= Kii(j, k);
+				//#pragma omp atomic
+				this->jacobian.coeffRef(3 * springs[i].second + j, 3 * springs[i].first + k) -= Kii(j, k);
+			}
+		}
+	}
+	if(isFirstTime)
+	jacobian.makeCompressed();
+
+
+}
+
+void MassSpring::integrate(float dt)
+{
+	Eigen::SparseMatrix<float> A = this->massMatrix - dt * dt * this->jacobian;
+	Eigen::VectorXf b = this->massMatrix * this->velocity + dt * this->force;
+	solver.compute(A);
+	this->velocity = solver.solveWithGuess(b, this->velocity);
+	float error = (A * this->velocity - b).norm();
+	this->velocity.segment<3>(0) = Eigen::Vector3f::Zero();
+	this->positions += dt * this->velocity;
+	this->tetMesh->tetData.vertices = this->positions;
+	this->tetMesh->isDirty = true;
 }
 
 
@@ -94,6 +167,10 @@ void MassSpring::calculateForces()
 void MassSpring::calculateMassMatrix()
 {
 	CustomUtils::Stopwatch sw("calculateMassMatrix");
+
+	this->massMatrix.resize(positions.size(), positions.size());
+	this->massMatrix.setZero();
+	this->massMatrix.reserve(Eigen::VectorXi::Constant(positions.size(), 1));
 
 	// find total volume of the mesh
 	float totalVolume = 0.0f;
@@ -140,15 +217,15 @@ void MassSpring::calculateMassMatrix()
 	assert(CustomUtils::epsEqual(massDiagonal.sum(), this->totalMass, 3.0f));
 	
 	// fill mass inverse matrix with the diagonal entries
+	#pragma omp parallel for
 	for (int i = 0; i < massDiagonal.size(); i++)
 	{
-		float invMass = 1.0f / massDiagonal(i);
 		for (int j = 0; j < 3; j++)
 		{
-			this->massInvMatrix.insert(3 * i + j, 3 * i + j) = invMass;
+			this->massMatrix.insert(3 * i + j, 3 * i + j) = massDiagonal(i);
 		}
 	}
-	massInvMatrix.makeCompressed();
+	massMatrix.makeCompressed();
 }
 
 MassSpring::~MassSpring()

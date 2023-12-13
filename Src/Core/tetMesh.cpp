@@ -74,9 +74,15 @@ void TetMesh::computeNormals()
 		Eigen::Vector3f normal = (v2 - v1).cross(v3 - v1).normalized();
 		if(normal.dot(v4 - v1) > 0)
 			normal *= -1;
-		this->tetData.normals.row(this->tetData.faces(i, 0)) += normal;
-		this->tetData.normals.row(this->tetData.faces(i, 1)) += normal;
-		this->tetData.normals.row(this->tetData.faces(i, 2)) += normal;
+		for (int j = 0; j < 3; j++)
+		{
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 0),j) += normal(j);
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 1),j) += normal(j);
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 2),j) += normal(j);
+		}
 	}
 	this->tetData.normals.rowwise().normalize();
 }

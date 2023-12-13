@@ -8,7 +8,7 @@ class TetMesh : public SceneObject
 public:
 	void normalizeModel();
 	void setBuffers();
-	void update();
+	virtual void update() override;
 	void computeNormals();
 	void initTetMesh(Eigen::Vector3f offset = Eigen::Vector3f::Zero());
 	void offsetVertices(const Eigen::Vector3f& offset);
