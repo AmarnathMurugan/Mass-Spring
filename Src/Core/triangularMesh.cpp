@@ -32,7 +32,6 @@ void TriangularMesh::generateBuffers()
 
 	glGenBuffers(1, &EBO) ;
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO) ;
-	uint32_t test = faceIndices.size();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * faceIndices.size(), faceIndices.data(), GL_STATIC_DRAW) ;
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]) ;

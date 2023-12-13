@@ -17,7 +17,7 @@ public:
 public:
 	struct TetData
 	{
-		MatrixX3fRowMajor vertices;
+		Eigen::VectorXf vertices;
 		MatrixX3fRowMajor normals;
 		MatrixX4UIRowMajor tetrahedra;
 		MatrixX3UIRowMajor faces;

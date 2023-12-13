@@ -1,7 +1,7 @@
 #include "tet_mesh_boundary.h"
 
 //****************************************************************************80
-int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices, uint32_t& numBdryVerts)
+int loadTetMesh(std::string prefix, Eigen::VectorXf& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices, uint32_t& numBdryVerts)
 
 //****************************************************************************80
 //
@@ -236,7 +236,7 @@ int loadTetMesh(std::string prefix, MatrixX3fRowMajor& positions, MatrixX4UIRowM
         }
     }
 
-    positions = Eigen::Map<MatrixX3dRowMajor>(node_xyz, node_num, 3).cast<float>();
+    positions = Eigen::Map<Eigen::VectorXd>(node_xyz, 3 * node_num).cast<float>();
     
     elementIndices = Eigen::Map<MatrixX4IRowMajor>(element_node, element_num, 4).cast<uint32_t>();
 

@@ -4,12 +4,16 @@ void TetMesh::normalizeModel()
 {
 	// Compute bounding box
 	Eigen::Vector3f min, max;
-	min = this->tetData.vertices.colwise().minCoeff();
-	max = this->tetData.vertices.colwise().maxCoeff();
+	min = Eigen::Map<MatrixX3fRowMajor>(this->tetData.vertices.data(), this->tetData.vertices.size() / 3, 3).colwise().minCoeff();
+	max = Eigen::Map<MatrixX3fRowMajor>(this->tetData.vertices.data(), this->tetData.vertices.size() / 3, 3).colwise().maxCoeff();
 	Eigen::Vector3f center = (min + max) / 2;
 	Eigen::Vector3f size = max - min;
 	float scale = 1.0f / size.maxCoeff();
-	this->tetData.vertices = (this->tetData.vertices.rowwise() - center.transpose()) * scale;	
+	#pragma omp parallel for
+	for (int i = 0; i < this->tetData.vertices.size() / 3; i++)
+	{	
+		this->tetData.vertices(Eigen::seqN(3 * i, 3)) = (this->tetData.vertices(Eigen::seqN(3 * i, 3)) - center) * scale;
+	}
 }
 
 void TetMesh::setBuffers()
@@ -63,10 +67,10 @@ void TetMesh::computeNormals()
 	#pragma omp parallel for
 	for (int i = 0; i < this->tetData.faces.rows(); i++)
 	{
-		Eigen::Vector3f v1 = this->tetData.vertices.row(this->tetData.faces(i, 0));
-		Eigen::Vector3f v2 = this->tetData.vertices.row(this->tetData.faces(i, 1));
-		Eigen::Vector3f v3 = this->tetData.vertices.row(this->tetData.faces(i, 2));
-		Eigen::Vector3f v4 = this->tetData.vertices.row(this->tetData.faceInteriorVertexIndices(i));
+		Eigen::Vector3f v1 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 0), 3));
+		Eigen::Vector3f v2 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 1), 3));
+		Eigen::Vector3f v3 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 2), 3));
+		Eigen::Vector3f v4 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faceInteriorVertexIndices(i),3));
 		Eigen::Vector3f normal = (v2 - v1).cross(v3 - v1).normalized();
 		if(normal.dot(v4 - v1) > 0)
 			normal *= -1;
@@ -82,7 +86,7 @@ void TetMesh::initTetMesh(Eigen::Vector3f offset)
 	this->normalizeModel();
 	if (offset.squaredNorm() > 0.0f)
 		this->offsetVertices(offset);
-	this->tetData.normals.resizeLike(this->tetData.vertices);
+	this->tetData.normals.resize(this->tetData.vertices.size() / 3, 3);
 	this->computeNormals();
 	this->setBuffers();
 
@@ -90,7 +94,11 @@ void TetMesh::initTetMesh(Eigen::Vector3f offset)
 
 void TetMesh::offsetVertices(const Eigen::Vector3f& offset)
 {
-	this->tetData.vertices.rowwise() += offset.transpose();
+	#pragma omp parallel for
+	for (int i = 0; i < this->tetData.vertices.size() / 3; i++)
+	{
+		this->tetData.vertices(Eigen::seqN(3 * i, 3)) = (this->tetData.vertices(Eigen::seqN(3 * i, 3)) + offset);
+	}
 }
 
 void TetMesh::render()
