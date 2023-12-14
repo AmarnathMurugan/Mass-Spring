@@ -103,7 +103,7 @@ void MassSpring::initJacobian()
 {
 	CustomUtils::Stopwatch sw("initJacobian");
 	this->jacobian.resize(this->positions.size(), this->positions.size());
-	this->jacobian.reserve(Eigen::VectorXi::Constant(this->positions.size(), 30));
+	this->jacobian.reserve(Eigen::VectorXi::Constant(this->positions.size(), 300));
 	std::unordered_set<int> visitedVerts;
 	std::unordered_map<int,int> springIndexMap;
 
@@ -171,29 +171,44 @@ void MassSpring::calculateJacobian()
 		float firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 		float secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 
+		addValueToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier, true);
+		addValueToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, false);
+		addValueToJacobian(springs[i].second, springs[i].second, values, Kii, secondMultiplier, true);
+		addValueToJacobian(springs[i].second, springs[i].first, values, -Kii, secondMultiplier, false);
+
 		// insert matrix into jacobian
-		for (int j = 0; j < 3; j++)
+		/*for (int j = 0; j < 3; j++)
 		{
 			for (int k = 0; k < 3; k++)
-			{
-		
-				
-					#pragma omp atomic
-					values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k) * firstMultiplier;
-					values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k) * firstMultiplier;
-				
-				
-					#pragma omp atomic
-					values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k) * secondMultiplier;
-					values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k) * secondMultiplier;
-
-				
+			{				
+				#pragma omp atomic
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k) * firstMultiplier;
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k) * firstMultiplier;
+				#pragma omp atomic
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k) * secondMultiplier;
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k) * secondMultiplier;
 			}
-		}
+		}*/
 	}
+}
 
+void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, float mul, bool isAtomic)
+{
+	for (int k = 0; k < 3; k++)
+	{
+		int firstIndex = matrixToValuesMap[std::make_pair(3 * row , 3 * col + k)];
+		for (int j = 0; j < 3; j++)
+			if (isAtomic)
+			{
+				#pragma omp atomic
+				values[firstIndex + j] += mat(j, k) * mul;
+			}
+			else
+			{
+				values[firstIndex + j] = mat(j, k) * mul;
+			}
 
-
+	}
 }
 
 void MassSpring::integrate(float dt, bool cgSolver)
@@ -226,68 +241,14 @@ void MassSpring::integrate(float dt, bool cgSolver)
 // iterate through each tetrahedron and assign weights to each vertex based on the tetrahedron volume
 void MassSpring::calculateMassMatrix()
 {
-	CustomUtils::Stopwatch sw("calculateMassMatrix");
+	//CustomUtils::Stopwatch sw("calculateMassMatrix");
 
 	this->massMatrix.resize(positions.size(), positions.size());
 	this->massMatrix.reserve(Eigen::VectorXi::Constant(positions.size(), 1));
-
-	//// find total volume of the mesh
-	//float totalVolume = 0.0f;
-	//std::vector<float> tetVolumes(tetMesh->tetData.tetrahedra.rows());
-	//Eigen::VectorXf massDiagonal(this->positions.size() / 3);
-	//massDiagonal.setZero();
-	//#pragma omp parallel for
-	//for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
-	//{
-	//	Eigen::Vector3f v0, v1, v2, v3;
-	//	v0 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 0));
-	//	v1 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 1));
-	//	v2 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 2));
-	//	v3 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 3));
-	//	// use Cayley-Menger determinant to find volume
-	//	Eigen::Matrix<float,5,5> cayleyMenger;
-	//	cayleyMenger << 0, 1, 1, 1, 1,
-	//		1, 0, (v0 - v1).squaredNorm(), (v0 - v2).squaredNorm(), (v0 - v3).squaredNorm(),
-	//		1, (v0 - v1).squaredNorm(), 0, (v1 - v2).squaredNorm(), (v1 - v3).squaredNorm(),
-	//		1, (v0 - v2).squaredNorm(), (v1 - v2).squaredNorm(), 0, (v2 - v3).squaredNorm(),
-	//		1, (v0 - v3).squaredNorm(), (v1 - v3).squaredNorm(), (v2 - v3).squaredNorm(), 0;
-	//	float volume = sqrt(cayleyMenger.determinant() / 288.0);
-	//	assert(volume > 0.0f && std::isnan(volume) == false);
-	//	tetVolumes[i] = volume;
-	//	//#pragma omp atomic
-	//	totalVolume += volume;
-	//}
-
-	//// iterate through each tetrahedron and assign weights to each vertex based on the tetrahedron volume
-	//#pragma omp parallel for
-	//for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
-	//{
-	//	for (int j = 0; j < 4; j++)
-	//	{
-	//		//#pragma omp atomic
-	//		massDiagonal(tetMesh->tetData.tetrahedra(i, j)) += this->totalMass * tetVolumes[i] / totalVolume;
-	//	}
-	//}
-
-	//#pragma omp parallel for
-	//for (int i = 0; i < massDiagonal.size(); i++)	
-	//	massDiagonal(i) /= 4;
-
-	//assert(CustomUtils::epsEqual(massDiagonal.sum(), this->totalMass, 3.0f));
-	
-	//#pragma omp parallel for
-	/*for (int i = 0; i < massDiagonal.size(); i++)
-	{
-		float mass = 1.0f;
-		for (int j = 0; j < 3; j++)
-		{
-			this->massMatrix.insert(3 * i + j, 3 * i + j) = mass;
-		}
-	}*/
 	// Make diagonal entries of mass matrix equal to 1
 	for (int i = 0; i < positions.size(); i++)
 	{
-		massMatrix.insert(i, i) = 1.0f;
+		massMatrix.insert(i, i) = perVertMass;
 	}
 
 	massMatrix.makeCompressed();
