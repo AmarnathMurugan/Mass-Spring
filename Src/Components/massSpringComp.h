@@ -16,6 +16,7 @@ public:
 	void calculateMassMatrix();
 	void calculateForces();
 	void handleCollisions();
+	void initJacobian();
 	void calculateJacobian();
 	void integrate(float dt);
 
@@ -29,13 +30,15 @@ private:
 	std::vector<float> restLengths;
 
 	Eigen::Vector3f gravity = Eigen::Vector3f(0.0f, -9.8f, 0.0f);
-	float springStiffness = 100.0f;
-	float damping = 0.0f;
-	float totalMass = 50.50f;
+	float springStiffness = 300.0f;
+	float damping = 50.0f;
+	float totalMass = 30.50f;
 
 	Eigen::VectorXf positions,force,velocity;
 	
 	Eigen::SparseMatrix<float> massMatrix,jacobian;
+
+	std::unordered_map<std::pair<int,int>, int, CustomUtils::PairHash> matrixToValuesMap;
 
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
 };

@@ -45,7 +45,7 @@ void MassSpring::Start()
 
 	calculateMassMatrix();
 	
-	calculateJacobian();
+	initJacobian();
 }
 
 void MassSpring::fixedUpdate(float dt)
@@ -63,6 +63,8 @@ void MassSpring::calculateForces()
 	{		
 		this->force.segment<3>(3 * i) = this->gravity;
 	}
+
+	force = this->massMatrix * force;
 
 	// Iterate through all springs and apply spring forces
 	#pragma omp parallel for
@@ -98,28 +100,59 @@ void MassSpring::handleCollisions()
 
 }
 
+void MassSpring::initJacobian()
+{
+	CustomUtils::Stopwatch sw("initJacobian");
+	this->jacobian.resize(this->positions.size(), this->positions.size());
+	this->jacobian.reserve(Eigen::VectorXi::Constant(this->positions.size(), 30));
+	std::unordered_set<int> visitedVerts;
+	std::unordered_map<int,int> springIndexMap;
+
+	for (int i = 0; i < springs.size(); i++)
+	{
+		bool isFirstVertVisited = visitedVerts.contains(springs[i].first);
+		bool isSecondVertVisited = visitedVerts.contains(springs[i].second);
+		// insert matrix into jacobian
+		for (int j = 0; j < 3; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				if(!isFirstVertVisited)
+				this->jacobian.insert(3 * springs[i].first + j, 3 * springs[i].first + k) = (3 * springs[i].first + j) + positions.size() * (3 * springs[i].first + k);
+				if(!isSecondVertVisited)
+				this->jacobian.insert(3 * springs[i].second + j, 3 * springs[i].second + k) = (3 * springs[i].second + j) + positions.size() * (3 * springs[i].second + k);
+				this->jacobian.insert(3 * springs[i].first + j, 3 * springs[i].second + k) = (3 * springs[i].first + j) + positions.size() * (3 * springs[i].second + k);
+				this->jacobian.insert(3 * springs[i].second + j, 3 * springs[i].first + k) = (3 * springs[i].second + j) + positions.size() * (3 * springs[i].first + k);
+			}
+		}
+		visitedVerts.insert(springs[i].first);
+		visitedVerts.insert(springs[i].second);
+	}
+
+	jacobian.makeCompressed();
+	auto values = jacobian.valuePtr();
+	int k = 0;
+	for (int i = 0; i < jacobian.outerSize(); i++)
+	{
+		for (Eigen::SparseMatrix<float>::InnerIterator it(jacobian, i); it; ++it)
+		{
+			this->matrixToValuesMap[std::make_pair(it.row(), it.col())] = k++;
+		}
+	
+	}
+}
+
 void MassSpring::calculateJacobian()
 {
-	bool isFirstTime = this->jacobian.size() == 0;
-
-	if (isFirstTime)
-	{
-			this->jacobian.resize(this->positions.size(), this->positions.size());
-			int maxValence = 0;
-			for (auto& [vert, adjVerts] : this->tetMesh->tetData.vertAdjacency)
-			{
-				maxValence = std::max(maxValence, (int)adjVerts.size());
-			}
-			this->jacobian.reserve(Eigen::VectorXi::Constant(this->positions.size(),maxValence*6));
-			this->jacobian.setZero();
-	}
-	else
-	{
-		this->jacobian.setZero();
-	}
+	CustomUtils::Stopwatch sw("calculateJacobian");
+	float* values = jacobian.valuePtr();
+	for (size_t i = 0; i < jacobian.nonZeros(); i++)	
+		values[i] = 0.0f;
+	
+	
 
 	// Iterate through all springs and caculate jacobian
-	//#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
 		Eigen::Vector3f springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
@@ -135,26 +168,23 @@ void MassSpring::calculateJacobian()
 		{
 			for (int k = 0; k < 3; k++)
 			{
-				//#pragma omp atomic
-				this->jacobian.coeffRef(3 * springs[i].first + j, 3 * springs[i].first + k) += Kii(j, k);
-				//#pragma omp atomic
-				this->jacobian.coeffRef(3 * springs[i].second + j, 3 * springs[i].second + k) += Kii(j, k);
-				//#pragma omp atomic
-				this->jacobian.coeffRef(3 * springs[i].first + j, 3 * springs[i].second + k) -= Kii(j, k);
-				//#pragma omp atomic
-				this->jacobian.coeffRef(3 * springs[i].second + j, 3 * springs[i].first + k) -= Kii(j, k);
+				#pragma omp atomic
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k);
+				#pragma omp atomic
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k);
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k);
+				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k);
 			}
 		}
 	}
-	if(isFirstTime)
-	jacobian.makeCompressed();
+
 
 
 }
 
 void MassSpring::integrate(float dt)
 {
-	//dt = dt / 10;
+	this->calculateJacobian();
 	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();
 	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force).cast<double>();
 	solver.compute(A);
