@@ -40,7 +40,7 @@ private:
 	
 	Eigen::SparseMatrix<float> massMatrix,jacobian;
 
-	std::unordered_map<std::pair<int,int>, int, CustomUtils::PairHash> matrixToValuesMap;
+	std::unordered_map<uint32_t, int> matrixToValuesMap;
 
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
 	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> ldlt_solver;

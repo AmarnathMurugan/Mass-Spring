@@ -131,6 +131,7 @@ void MassSpring::initJacobian()
 	jacobian.makeCompressed();
 	auto values = jacobian.valuePtr();
 	int k = 0;
+	int numNonZeros = jacobian.nonZeros();
 	// Iterate through all non zero elements and get flat index of the first column element of all matrices
 	for (int i = 0; i < jacobian.outerSize(); i++)
 	{
@@ -139,7 +140,7 @@ void MassSpring::initJacobian()
 			int row = it.row();
 			int col = it.col();
 			if(row % 3 == 0)
-				this->matrixToValuesMap[std::make_pair(row, col)] = k;
+				this->matrixToValuesMap[row*numNonZeros+col] = k;
 			k++;
 		}
 	
@@ -201,9 +202,10 @@ void MassSpring::calculateJacobian()
 
 void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, float mul, bool isAtomic)
 {
+	int numNonZeros = jacobian.nonZeros();
 	for (int k = 0; k < 3; k++)
 	{
-		int firstIndex = matrixToValuesMap[std::make_pair(3 * row , 3 * col + k)];
+		int firstIndex = matrixToValuesMap[3 * row * numNonZeros + 3 * col + k];
 		for (int j = 0; j < 3; j++)
 			if (isAtomic)
 			{
