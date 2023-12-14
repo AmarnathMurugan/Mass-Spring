@@ -52,7 +52,7 @@ void MassSpring::fixedUpdate(float dt)
 {
 	this->calculateForces();
 	this->handleCollisions();
-	this->integrate(dt);
+	this->integrate(dt,false);
 }
 
 void MassSpring::calculateForces()
@@ -74,15 +74,13 @@ void MassSpring::calculateForces()
 		Eigen::Vector3f springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
 		float springLength = springVector.norm();
 		assert(springLength > 0.0);
-		springVector.normalize();
+		
 		// Compute spring force
-		springForces = (this->springStiffness) * (springLength - restLengths[i]) * springVector;
+		springForces = (this->springStiffness) * (springVector - restLengths[i] * springVector.normalized()) / restLengths[i];
 
 		// Compute damping force
-		Eigen::Vector3f velocityDifference = this->velocity.segment<3>(3 * springs[i].second) - this->velocity.segment<3>(3 * springs[i].first);
-		springForces += this->damping *  velocityDifference.dot(springVector) * springVector;
-		/*if (springForces.squaredNorm() > 100 * 100)
-			springForces = springForces.normalized() * 100;*/
+		//Eigen::Vector3f velocityDifference = this->velocity.segment<3>(3 * springs[i].second) - this->velocity.segment<3>(3 * springs[i].first);
+		//springForces += this->damping *  velocityDifference.dot(springVector) * springVector;
 
 		for (int j = 0; j < 3; j++)
 		{
@@ -92,7 +90,8 @@ void MassSpring::calculateForces()
 			this->force(3 * springs[i].second + j) -= springForces(j);
 		}		
 	}
-	this->force.segment<3>(0) = Eigen::Vector3f::Zero();
+	if(this->isPinFirstVertex)
+		force.segment<3>(0).setZero();
 }
 
 void MassSpring::handleCollisions()
@@ -159,21 +158,36 @@ void MassSpring::calculateJacobian()
 		float springLength = springVector.norm();
 		assert(springLength > 0.0);
 		// Compute spring force
-		Eigen::Matrix3f Kii = (this->springStiffness) * (-Eigen::Matrix3f::Identity() +
-											(springLength / this->restLengths[i]) * (Eigen::Matrix3f::Identity()
-											- springVector * springVector.transpose() / (springLength* springLength)));
-		
+		Eigen::Matrix3f Kii = springVector * springVector.transpose();
+		float l2 = springVector.squaredNorm();
+		float l = sqrt(l2);
+		Eigen::Matrix3f term1 = Eigen::Matrix3f::Identity() - Kii / l2;
+		Eigen::Matrix3f K_spring = this->springStiffness * (-Eigen::Matrix3f::Identity() + (this->restLengths[i] / l) * term1) / this->restLengths[i];
+		if (l < restLengths[i])
+		{
+			K_spring = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
+		}
+		Kii = K_spring;
+		float firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
+		float secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
+
 		// insert matrix into jacobian
 		for (int j = 0; j < 3; j++)
 		{
 			for (int k = 0; k < 3; k++)
 			{
-				#pragma omp atomic
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k);
-				#pragma omp atomic
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k);
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k);
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k);
+		
+				
+					#pragma omp atomic
+					values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k) * firstMultiplier;
+					values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k) * firstMultiplier;
+				
+				
+					#pragma omp atomic
+					values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k) * secondMultiplier;
+					values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k) * secondMultiplier;
+
+				
 			}
 		}
 	}
@@ -182,15 +196,27 @@ void MassSpring::calculateJacobian()
 
 }
 
-void MassSpring::integrate(float dt)
+void MassSpring::integrate(float dt, bool cgSolver)
 {
 	this->calculateJacobian();
-	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();
+	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();	
 	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force).cast<double>();
-	solver.compute(A);
-	this->velocity = solver.solveWithGuess(b, this->velocity.cast<double>()).cast<float>();
-	//float error = (A * this->velocity - b).norm();
-	this->velocity.segment<3>(0) = Eigen::Vector3f::Zero();
+	if (this->isPinFirstVertex)
+	{
+		b.segment<3>(0).setZero();
+	}
+	if (cgSolver)
+	{
+		solver.compute(A);
+		this->velocity = solver.solveWithGuess(b, this->velocity.cast<double>()).cast<float>();
+	}
+	else
+	{
+		ldlt_solver.compute(A);
+		this->velocity = ldlt_solver.solve(b).cast<float>();		
+	}
+	if(this->isPinFirstVertex)
+		this->velocity.segment<3>(0).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->tetData.vertices = this->positions;
 	this->tetMesh->isDirty = true;
@@ -203,62 +229,67 @@ void MassSpring::calculateMassMatrix()
 	CustomUtils::Stopwatch sw("calculateMassMatrix");
 
 	this->massMatrix.resize(positions.size(), positions.size());
-	this->massMatrix.setZero();
 	this->massMatrix.reserve(Eigen::VectorXi::Constant(positions.size(), 1));
 
-	// find total volume of the mesh
-	float totalVolume = 0.0f;
-	std::vector<float> tetVolumes(tetMesh->tetData.tetrahedra.rows());
-	Eigen::VectorXf massDiagonal(this->positions.size() / 3);
-	massDiagonal.setZero();
-	#pragma omp parallel for
-	for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
-	{
-		Eigen::Vector3f v0, v1, v2, v3;
-		v0 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 0));
-		v1 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 1));
-		v2 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 2));
-		v3 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 3));
-		// use Cayley-Menger determinant to find volume
-		Eigen::Matrix<float,5,5> cayleyMenger;
-		cayleyMenger << 0, 1, 1, 1, 1,
-			1, 0, (v0 - v1).squaredNorm(), (v0 - v2).squaredNorm(), (v0 - v3).squaredNorm(),
-			1, (v0 - v1).squaredNorm(), 0, (v1 - v2).squaredNorm(), (v1 - v3).squaredNorm(),
-			1, (v0 - v2).squaredNorm(), (v1 - v2).squaredNorm(), 0, (v2 - v3).squaredNorm(),
-			1, (v0 - v3).squaredNorm(), (v1 - v3).squaredNorm(), (v2 - v3).squaredNorm(), 0;
-		float volume = sqrt(cayleyMenger.determinant() / 288.0);
-		assert(volume > 0.0f && std::isnan(volume) == false);
-		tetVolumes[i] = volume;
-		#pragma omp atomic
-		totalVolume += volume;
-	}
+	//// find total volume of the mesh
+	//float totalVolume = 0.0f;
+	//std::vector<float> tetVolumes(tetMesh->tetData.tetrahedra.rows());
+	//Eigen::VectorXf massDiagonal(this->positions.size() / 3);
+	//massDiagonal.setZero();
+	//#pragma omp parallel for
+	//for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
+	//{
+	//	Eigen::Vector3f v0, v1, v2, v3;
+	//	v0 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 0));
+	//	v1 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 1));
+	//	v2 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 2));
+	//	v3 = this->positions.segment<3>(3 * tetMesh->tetData.tetrahedra(i, 3));
+	//	// use Cayley-Menger determinant to find volume
+	//	Eigen::Matrix<float,5,5> cayleyMenger;
+	//	cayleyMenger << 0, 1, 1, 1, 1,
+	//		1, 0, (v0 - v1).squaredNorm(), (v0 - v2).squaredNorm(), (v0 - v3).squaredNorm(),
+	//		1, (v0 - v1).squaredNorm(), 0, (v1 - v2).squaredNorm(), (v1 - v3).squaredNorm(),
+	//		1, (v0 - v2).squaredNorm(), (v1 - v2).squaredNorm(), 0, (v2 - v3).squaredNorm(),
+	//		1, (v0 - v3).squaredNorm(), (v1 - v3).squaredNorm(), (v2 - v3).squaredNorm(), 0;
+	//	float volume = sqrt(cayleyMenger.determinant() / 288.0);
+	//	assert(volume > 0.0f && std::isnan(volume) == false);
+	//	tetVolumes[i] = volume;
+	//	//#pragma omp atomic
+	//	totalVolume += volume;
+	//}
 
-	// iterate through each tetrahedron and assign weights to each vertex based on the tetrahedron volume
-	#pragma omp parallel for
-	for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			#pragma omp atomic
-			massDiagonal(tetMesh->tetData.tetrahedra(i, j)) += this->totalMass * tetVolumes[i] / totalVolume;
-		}
-	}
+	//// iterate through each tetrahedron and assign weights to each vertex based on the tetrahedron volume
+	//#pragma omp parallel for
+	//for (int i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
+	//{
+	//	for (int j = 0; j < 4; j++)
+	//	{
+	//		//#pragma omp atomic
+	//		massDiagonal(tetMesh->tetData.tetrahedra(i, j)) += this->totalMass * tetVolumes[i] / totalVolume;
+	//	}
+	//}
 
-	#pragma omp parallel for
-	for (int i = 0; i < massDiagonal.size(); i++)	
-		massDiagonal(i) /= 4;
+	//#pragma omp parallel for
+	//for (int i = 0; i < massDiagonal.size(); i++)	
+	//	massDiagonal(i) /= 4;
 
-	assert(CustomUtils::epsEqual(massDiagonal.sum(), this->totalMass, 3.0f));
+	//assert(CustomUtils::epsEqual(massDiagonal.sum(), this->totalMass, 3.0f));
 	
-	// fill mass inverse matrix with the diagonal entries
-	#pragma omp parallel for
-	for (int i = 0; i < massDiagonal.size(); i++)
+	//#pragma omp parallel for
+	/*for (int i = 0; i < massDiagonal.size(); i++)
 	{
+		float mass = 1.0f;
 		for (int j = 0; j < 3; j++)
 		{
-			this->massMatrix.insert(3 * i + j, 3 * i + j) = massDiagonal(i);
+			this->massMatrix.insert(3 * i + j, 3 * i + j) = mass;
 		}
+	}*/
+	// Make diagonal entries of mass matrix equal to 1
+	for (int i = 0; i < positions.size(); i++)
+	{
+		massMatrix.insert(i, i) = 1.0f;
 	}
+
 	massMatrix.makeCompressed();
 }
 
