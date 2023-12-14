@@ -48,11 +48,12 @@ void MassSpring::Start()
 	initJacobian();
 }
 
-void MassSpring::fixedUpdate(float dt)
+void MassSpring::fixedUpdate(float _dt)
 {
+	dt = _dt;
 	this->calculateForces();
 	this->handleCollisions();
-	this->integrate(dt,false);
+	this->integrate();
 }
 
 void MassSpring::calculateForces()
@@ -92,11 +93,19 @@ void MassSpring::calculateForces()
 	}
 	if(this->isPinFirstVertex)
 		force.segment<3>(0).setZero();
+
 }
 
 void MassSpring::handleCollisions()
 {
-
+#pragma omp parallel for
+	for (int i = 0; i < positions.size() / 3; i++)
+	{
+		if (this->positions(3 * i + 1) < 0.0)
+		{
+			this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
+		}
+	}
 }
 
 void MassSpring::initJacobian()
@@ -179,10 +188,10 @@ void MassSpring::calculateJacobian()
 		float firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 		float secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 
-		addValueToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier, true);
-		addValueToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, false);
-		addValueToJacobian(springs[i].second, springs[i].second, values, Kii, secondMultiplier, true);
-		addValueToJacobian(springs[i].second, springs[i].first, values, -Kii, secondMultiplier, false);
+		addValueToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
+		addValueToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
+		addValueToJacobian(springs[i].second, springs[i].second, values, Kii, secondMultiplier, nnz, true);
+		addValueToJacobian(springs[i].second, springs[i].first, values, -Kii, secondMultiplier, nnz, false);
 
 		// insert matrix into jacobian
 		/*for (int j = 0; j < 3; j++)
@@ -200,12 +209,12 @@ void MassSpring::calculateJacobian()
 	}
 }
 
-void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, float mul, bool isAtomic)
+void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, const float& mul, const int& nnz, bool isAtomic)
 {
-	int numNonZeros = jacobian.nonZeros();
+	
 	for (int k = 0; k < 3; k++)
 	{
-		int firstIndex = matrixToValuesMap[3 * row * numNonZeros + 3 * col + k];
+		int firstIndex = matrixToValuesMap[3 * row * nnz + 3 * col + k];
 		for (int j = 0; j < 3; j++)
 			if (isAtomic)
 			{
@@ -220,7 +229,7 @@ void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen
 	}
 }
 
-void MassSpring::integrate(float dt, bool cgSolver)
+void MassSpring::integrate()
 {
 	this->calculateJacobian();
 	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();	

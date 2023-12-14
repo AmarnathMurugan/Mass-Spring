@@ -48,14 +48,14 @@ void TetMesh::update()
 	SceneObject::update();
 	if (this->isDirty)
 	{
-		computeNormals();
+		//computeNormals();
 		this->isDirty = false;
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.vertices.size() * sizeof(float), this->tetData.vertices.data());
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.normals.size() * sizeof(float), this->tetData.normals.data());
+		//glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+		//glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.normals.size() * sizeof(float), this->tetData.normals.data());
 	}
 }
 

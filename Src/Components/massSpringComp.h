@@ -18,8 +18,8 @@ public:
 	void handleCollisions();
 	void initJacobian();
 	void calculateJacobian();
-	void addValueToJacobian(int first, int second, float* values, const Eigen::Matrix3f& mat,float mul,  bool isAtomic);
-	void integrate(float dt, bool cgSolver = true);
+	void addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat,const float& mul,const int& nnz,  bool isAtomic);
+	void integrate();
 
 	~MassSpring();
 
@@ -31,10 +31,13 @@ private:
 	std::vector<float> restLengths;
 
 	Eigen::Vector3f gravity = Eigen::Vector3f(0.0f, -9.8f, 0.0f);
-	float springStiffness = 1000;
+	float dt = 1.0f / 60.0f;
+	float springStiffness = 5000;
 	float damping = 0.0f;
 	float perVertMass = 1.0f;
+	float collisionPenalty = 30000000.0f;
 	bool isPinFirstVertex = false;
+	bool cgSolver = true;
 
 	Eigen::VectorXf positions,force,velocity;
 	
