@@ -54,7 +54,7 @@ void Engine::initScene()
 
 	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
 	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
-	tetMesh->initTetMesh(Eigen::Vector3d(0.0,2.,0.0));
+	tetMesh->initTetMesh(Eigen::Vector3d(0.0,3.,0.0));
 	this->scene.addSceneObject(tetMesh, tetBlinnMat);
 
 	std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);

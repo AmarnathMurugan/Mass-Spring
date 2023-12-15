@@ -48,15 +48,49 @@ void TetMesh::update(const EngineState& engineState)
 	SceneObject::update(engineState);
 	if (this->isDirty)
 	{
-		//computeNormals();
+		computeNormals();
 		this->isDirty = false;
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.vertices.size() * sizeof(double), this->tetData.vertices.data());
-		//glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-		//glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.normals.size() * sizeof(float), this->tetData.normals.data());
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, this->tetData.normals.size() * sizeof(float), this->tetData.normals.data());
 	}
+}
+
+void TetMesh::initNormals()
+{
+	this->tetData.normals.resize(this->tetData.vertices.size() / 3, 3);
+	this->tetData.normals.setZero();
+	#pragma omp parallel for
+	for (int i = 0; i < this->tetData.faces.rows(); i++)
+	{
+		Eigen::Vector3d v1 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 0), 3));
+		Eigen::Vector3d v2 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 1), 3));
+		Eigen::Vector3d v3 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 2), 3));
+		Eigen::Vector3d v4 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faceInteriorVertexIndices(i), 3));
+		Eigen::Vector3d normal = (v2 - v1).cross(v3 - v1).normalized();
+		if (normal.dot(v4 - v1) > 0)
+		{
+			normal *= -1;
+			// swap vertices
+			int temp = this->tetData.faces(i, 1);
+			this->tetData.faces(i, 1) = this->tetData.faces(i, 2);
+			this->tetData.faces(i, 2) = temp;
+		}
+		for (int j = 0; j < 3; j++)
+		{
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 0), j) += (float)normal(j);
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 1), j) += (float)normal(j);
+			#pragma omp atomic
+			this->tetData.normals(this->tetData.faces(i, 2), j) += (float)normal(j);
+		}
+	}
+	this->tetData.normals.rowwise().normalize();
+
 }
 
 void TetMesh::computeNormals()
@@ -69,10 +103,7 @@ void TetMesh::computeNormals()
 		Eigen::Vector3d v1 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 0), 3));
 		Eigen::Vector3d v2 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 1), 3));
 		Eigen::Vector3d v3 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faces(i, 2), 3));
-		Eigen::Vector3d v4 = this->tetData.vertices(Eigen::seqN(3 * this->tetData.faceInteriorVertexIndices(i),3));
 		Eigen::Vector3d normal = (v2 - v1).cross(v3 - v1).normalized();
-		if(normal.dot(v4 - v1) > 0)
-			normal *= -1;
 		for (int j = 0; j < 3; j++)
 		{
 			#pragma omp atomic
@@ -91,7 +122,7 @@ void TetMesh::initTetMesh(Eigen::Vector3d offset)
 	this->normalizeModel();
 	if (offset.squaredNorm() > 0.0f)
 		this->offsetVertices(offset);
-	this->tetData.normals.resize(this->tetData.vertices.size() / 3, 3);
+	this->initNormals();
 	this->computeNormals();
 	this->setBuffers();
 

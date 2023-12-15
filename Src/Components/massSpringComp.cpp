@@ -61,8 +61,8 @@ void MassSpring::fixedUpdate(const EngineState& engineState)
 	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = engineState.physics->fixedDeltaTime;
 	this->calculateForces();
-	this->handleCollisions();
 	this->integrate();
+	this->handleCollisions();
 }
 
 void MassSpring::calculateForces()
@@ -103,12 +103,15 @@ void MassSpring::calculateForces()
 
 void MassSpring::handleCollisions()
 {
+	float restitution = 0.9;
 #pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{
 		if (this->positions(3 * i + 1) <= 0.0)
 		{
-			this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
+			//this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
+			this->positions(3 * i + 1) = std::abs(this->positions(3 * i + 1)) * restitution;
+			this->velocity.segment<3>(3 * i) *= -restitution;
 		}
 	}
 }
@@ -230,7 +233,7 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
-		solver.setTolerance(1e-4);
+		solver.setTolerance(1e-6);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);

@@ -9,6 +9,7 @@ public:
 	void normalizeModel();
 	void setBuffers();
 	virtual void update(const EngineState& engineState) override;
+	void initNormals();
 	void computeNormals();
 	void initTetMesh(Eigen::Vector3d offset = Eigen::Vector3d::Zero());
 	void offsetVertices(const Eigen::Vector3d& offset);

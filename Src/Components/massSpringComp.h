@@ -31,14 +31,14 @@ private:
 	std::vector<double> restLengths;
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
-	double dt = 1.0f / 60.0f;
-	double springStiffness = 10000;
+	double dt;
+	double springStiffness = 30000;
 	double damping = 0.0f;
-	double perVertMass = 2;
+	double perVertMass = 1.0;
 	double collisionPenalty = 5000000.0;
 	int pinnedVertex = 20;
-	bool isPinVertex = true;
-	bool cgSolver = true;
+	bool isPinVertex = false;
+	bool cgSolver = false;
 
 	Eigen::VectorXd force,velocity;
 	Eigen::VectorXd& positions;
