@@ -48,6 +48,14 @@ void MassSpring::Start()
 	initJacobian();
 }
 
+void MassSpring::update(const EngineState& engineState)
+{
+	if (engineState.keyboard->released.contains(GLFW_KEY_SPACE))
+	{
+		this->isPinVertex = !this->isPinVertex;
+	}
+}
+
 void MassSpring::fixedUpdate(const EngineState& engineState)
 {
 	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
@@ -237,7 +245,7 @@ void MassSpring::integrate()
 		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->isDirty = true;
-	//this->velocity = this->velocity * 0.99;
+	this->velocity = this->velocity * 0.99;
 }
 
 

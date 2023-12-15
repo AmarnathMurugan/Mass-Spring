@@ -10,7 +10,7 @@ class MassSpring : public Component
 public:
 	MassSpring(std::shared_ptr<TetMesh> _tetMesh);
 	virtual void Start() override;
-	virtual void update(const EngineState& engineState) override {  }
+	virtual void update(const EngineState& engineState) override;
 	virtual void fixedUpdate(const EngineState& engineState) override;
 
 	void calculateMassMatrix();
@@ -32,7 +32,7 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt = 1.0f / 60.0f;
-	double springStiffness = 5000;
+	double springStiffness = 10000;
 	double damping = 0.0f;
 	double perVertMass = 2;
 	double collisionPenalty = 5000000.0;
