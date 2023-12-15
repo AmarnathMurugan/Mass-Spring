@@ -51,7 +51,7 @@ void MassSpring::Start()
 
 void MassSpring::fixedUpdate(float _dt)
 {
-	CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
+	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = _dt;
 	this->calculateForces();
 	this->handleCollisions();
@@ -216,7 +216,7 @@ void MassSpring::addMatrixToJacobian(int row, int col, double* values, const Eig
 }
 
 void MassSpring::integrate()
-{
+{	
 	this->calculateJacobian();
 	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian);	
 	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force);
@@ -226,11 +226,13 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
+		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
 	}
 	else
 	{
+		CustomUtils::Stopwatch sw("ldlt solve");
 		ldlt_solver.compute(A);
 		this->velocity = ldlt_solver.solve(b);		
 	}
