@@ -176,14 +176,12 @@ void MassSpring::calculateJacobian()
 		Eigen::Matrix3d Kii = springVector * springVector.transpose();
 		double l2 = springVector.squaredNorm();
 		double l = sqrt(l2);
-		Eigen::Matrix3d term1 = Eigen::Matrix3d::Identity() - Kii / l2;
-		Eigen::Matrix3d K_spring = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * term1) / this->restLengths[i];
-		if (l < restLengths[i])
-		{
-			K_spring = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
-		}
-		Kii = K_spring;
-
+		Kii = Eigen::Matrix3d::Identity() - Kii / l2;
+		if (l < restLengths[i])		
+			Kii = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
+		else
+		Kii = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * Kii) / this->restLengths[i];
+		
 		
 		double firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 		double secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
