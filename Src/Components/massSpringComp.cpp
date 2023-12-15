@@ -240,6 +240,7 @@ void MassSpring::integrate()
 		this->velocity.segment<3>(0).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->isDirty = true;
+	this->velocity = this->velocity * 0.99;
 }
 
 
