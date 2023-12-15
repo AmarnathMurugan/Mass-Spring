@@ -56,23 +56,12 @@ private:
 		}
 	}scene;
 
-	struct PhysicsSettings
-	{
-		std::chrono::time_point<std::chrono::high_resolution_clock> start;
-		double fixedDeltaTime = 1.0 / 60.0;
-	}physicsSettings;
+	//PhysicsSettings physicsSettings;
 
-	struct KeyboardState
-	{
-		std::unordered_set<int> down,held,released;
-	}keyboardState;
+	//KeyboardState keyboardState;
 
-	struct MouseState
-	{
-		bool isLeftDown = false;
-		bool isRightDown = false;
-		bool isMiddleDown = false;
-		Eigen::Vector2d prevPos,curPos,deltaPos;
-	}mouseState;
+	//MouseState mouseState;
+
+	EngineState engineState;
 
 };

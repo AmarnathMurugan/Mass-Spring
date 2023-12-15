@@ -3,6 +3,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Core>
 #include <glad/glad.h>
+#include <unordered_set>
+#include <chrono>
 
 #define GL_INVALID_INDEX 0xFFFFFFFF
 
@@ -31,6 +33,36 @@ struct RenderState
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
 	float lightIntensity = 1.0f;
 
+};
+
+struct KeyboardState
+{
+	std::unordered_set<int> down, held, released;
+};
+
+struct MouseState
+{
+	bool isLeftDown = false;
+	bool isRightDown = false;
+	bool isMiddleDown = false;
+	Eigen::Vector2d prevPos, curPos, deltaPos;
+};
+
+struct PhysicsSettings
+{
+	std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	double fixedDeltaTime = 1.0 / 60.0;
+};
+
+struct EngineState
+{
+	std::shared_ptr<KeyboardState> keyboard;
+	std::shared_ptr<MouseState> mouse;
+	std::shared_ptr<PhysicsSettings> physics;
+	std::shared_ptr<RenderState> renderState;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	std::chrono::time_point<std::chrono::high_resolution_clock> prevTime;
+	double deltaTime;
 };
 
 struct SurfaceProperties

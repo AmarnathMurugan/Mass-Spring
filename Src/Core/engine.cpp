@@ -11,12 +11,17 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, 0);
 
+	this->engineState.keyboard = std::make_shared<KeyboardState>();
+	this->engineState.mouse = std::make_shared<MouseState>();
+	this->engineState.physics = std::make_shared<PhysicsSettings>();
+
+
 	this->initScene();
 }
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,.2,0), 5 ,45);
+	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,.2,0), 6 ,45);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -64,7 +69,7 @@ void Engine::initScene()
 	plane->generateBuffers();
 	plane->transform.scale(Eigen::Vector3f(3, 3, 3));
 	this->scene.addSceneObject(plane, planeMat);
-
+	this->engineState.renderState = std::make_shared<RenderState>(scene.renderState);
 }
 
 
@@ -76,70 +81,71 @@ void Engine::start()
 			continue;
 		this->scene.sceneObjects[i]->Start();
 	}
-	glfwGetCursorPos(this->window, &this->mouseState.prevPos.x(), &this->mouseState.prevPos.y());
-	this->mouseState.curPos = this->mouseState.prevPos;
-	this->physicsSettings.start = std::chrono::high_resolution_clock::now();
+	glfwGetCursorPos(this->window, &this->engineState.mouse->prevPos.x(), &this->engineState.mouse->prevPos.y());
+	this->engineState.mouse->curPos = this->engineState.mouse->prevPos;
+	this->engineState.physics->start = std::chrono::high_resolution_clock::now();
+	this->engineState.start = std::chrono::high_resolution_clock::now();
 }
 
 void Engine::handleEvent(const GLEQevent& event)
 {
-	this->keyboardState.down.clear();
-	this->keyboardState.released.clear();
+	this->engineState.keyboard->down.clear();
+	this->engineState.keyboard->released.clear();
 
 	switch (event.type)
 	{
-		case GLEQ_WINDOW_RESIZED:
-			this->scene.renderState.windowWidth = event.size.width;
-			this->scene.renderState.windowHeight = event.size.height;
-			glViewport(0, 0, this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
+	case GLEQ_WINDOW_RESIZED:
+		this->scene.renderState.windowWidth = event.size.width;
+		this->scene.renderState.windowHeight = event.size.height;
+		glViewport(0, 0, this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
+		break;
+	case GLEQ_KEY_PRESSED:
+		this->engineState.keyboard->down.insert(event.keyboard.key);
+		this->engineState.keyboard->held.insert(event.keyboard.key);
+		this->engineState.keyboard->down.insert(event.keyboard.mods);
+		this->engineState.keyboard->held.insert(event.keyboard.mods);
+		this->handleInteractions(event.keyboard.key, true);
+		break;
+	case GLEQ_KEY_RELEASED:
+		this->engineState.keyboard->held.erase(event.keyboard.key);
+		this->engineState.keyboard->released.insert(event.keyboard.key);
+		this->engineState.keyboard->held.erase(event.keyboard.mods);
+		this->engineState.keyboard->released.insert(event.keyboard.mods);
+		this->handleInteractions(event.keyboard.key, false);
+		break;
+	case GLEQ_BUTTON_PRESSED:
+		this->handleInteractions(event.mouse.button, true);
+		switch (event.mouse.button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			this->engineState.mouse->isLeftDown = true;
 			break;
-		case GLEQ_KEY_PRESSED:
-			this->keyboardState.down.insert(event.keyboard.key);
-			this->keyboardState.held.insert(event.keyboard.key);
-			this->keyboardState.down.insert(event.keyboard.mods);
-			this->keyboardState.held.insert(event.keyboard.mods);
-			this ->handleInteractions(event.keyboard.key, true);
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			this->engineState.mouse->isRightDown = true;
 			break;
-		case GLEQ_KEY_RELEASED:
-			this->keyboardState.held.erase(event.keyboard.key);
-			this->keyboardState.released.insert(event.keyboard.key);
-			this->keyboardState.held.erase(event.keyboard.mods);
-			this->keyboardState.released.insert(event.keyboard.mods);
-			this->handleInteractions(event.keyboard.key, false);
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			this->engineState.mouse->isMiddleDown = true;
 			break;
-		case GLEQ_BUTTON_PRESSED:
-			this->handleInteractions(event.mouse.button, true);
-			switch (event.mouse.button)
-			{
-			case GLFW_MOUSE_BUTTON_LEFT:
-				this->mouseState.isLeftDown = true;
-				break;
-			case GLFW_MOUSE_BUTTON_RIGHT:
-				this->mouseState.isRightDown = true;
-				break;
-			case GLFW_MOUSE_BUTTON_MIDDLE:
-				this->mouseState.isMiddleDown = true;
-				break;
-			}
+		}
+		break;
+	case GLEQ_BUTTON_RELEASED:
+		this->handleInteractions(event.mouse.button, false);
+		switch (event.mouse.button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			this->engineState.mouse->isLeftDown = false;
 			break;
-		case GLEQ_BUTTON_RELEASED:
-			this->handleInteractions(event.mouse.button, false);
-			switch (event.mouse.button)
-			{
-			case GLFW_MOUSE_BUTTON_LEFT:
-				this->mouseState.isLeftDown = false;
-				break;
-			case GLFW_MOUSE_BUTTON_RIGHT:
-				this->mouseState.isRightDown = false;
-				break;
-			case GLFW_MOUSE_BUTTON_MIDDLE:
-				this->mouseState.isMiddleDown = false;
-				break;
-			}
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			this->engineState.mouse->isRightDown = false;
 			break;
-		case GLEQ_SCROLLED:
-			this->scene.cam->zoom(-event.scroll.y * 1.5f);
-			break;	
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			this->engineState.mouse->isMiddleDown = false;
+			break;
+		}
+		break;
+	case GLEQ_SCROLLED:
+		this->scene.cam->zoom(-event.scroll.y * 1.5f);
+		break;
 	}
 }
 
@@ -147,49 +153,50 @@ void Engine::handleInteractions(int key, bool isDown)
 {
 	switch (key)
 	{
-		case GLFW_KEY_ESCAPE:
-			if (!isDown)			
-				glfwSetWindowShouldClose(this->window, GLFW_TRUE);			
-			break;
-		case GLFW_KEY_P:
-			if (!isDown) break;
-			this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
-			break;
-		case GLFW_KEY_LEFT_CONTROL:
-			break;
+	case GLFW_KEY_ESCAPE:
+		if (!isDown)
+			glfwSetWindowShouldClose(this->window, GLFW_TRUE);
+		break;
+	case GLFW_KEY_P:
+		if (!isDown) break;
+		this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
+		break;
+	case GLFW_KEY_LEFT_CONTROL:
+		break;
 	}
 
 	switch (key)
 	{
-		case GLFW_MOUSE_BUTTON_LEFT:
-			break;
+	case GLFW_MOUSE_BUTTON_LEFT:
+		break;
 	}
 
 }
 
 void Engine::handleInteractions()
 {
-	bool isCtrlPressed = (this->keyboardState.held.find(GLFW_KEY_LEFT_CONTROL) != this->keyboardState.held.end()) || 
-						 (this->keyboardState.held.find(GLFW_KEY_RIGHT_CONTROL) != this->keyboardState.held.end());
-	
-	bool isAltPressed = (this->keyboardState.held.find(GLFW_KEY_LEFT_ALT) != this->keyboardState.held.end()) ||
-		(this->keyboardState.held.find(GLFW_KEY_RIGHT_ALT) != this->keyboardState.held.end());
-	
-	if (isAltPressed && this->mouseState.isLeftDown)
-		this->scene.cam->rotateCamera(this->mouseState.deltaPos);
-	
-	if(isAltPressed && this->mouseState.isRightDown)
-		this->scene.cam->zoom(this->mouseState.deltaPos.y() * 0.2);
+	bool isCtrlPressed = (this->engineState.keyboard->held.find(GLFW_KEY_LEFT_CONTROL) != this->engineState.keyboard->held.end()) ||
+		(this->engineState.keyboard->held.find(GLFW_KEY_RIGHT_CONTROL) != this->engineState.keyboard->held.end());
 
-	if(isAltPressed && this->mouseState.isMiddleDown)
-		this->scene.cam->panCamera(this->mouseState.deltaPos);
+	bool isAltPressed = (this->engineState.keyboard->held.find(GLFW_KEY_LEFT_ALT) != this->engineState.keyboard->held.end()) ||
+		(this->engineState.keyboard->held.find(GLFW_KEY_RIGHT_ALT) != this->engineState.keyboard->held.end());
+
+	if (isAltPressed && this->engineState.mouse->isLeftDown)
+		this->scene.cam->rotateCamera(this->engineState.mouse->deltaPos);
+
+	if (isAltPressed && this->engineState.mouse->isRightDown)
+		this->scene.cam->zoom(this->engineState.mouse->deltaPos.y() * 0.2);
+
+	if (isAltPressed && this->engineState.mouse->isMiddleDown)
+		this->scene.cam->panCamera(this->engineState.mouse->deltaPos);
 }
 
 void Engine::update()
 {
-	this->mouseState.prevPos = this->mouseState.curPos;
-	glfwGetCursorPos(this->window, &this->mouseState.curPos.x(), &this->mouseState.curPos.y());
-	this->mouseState.deltaPos = this->mouseState.curPos - this->mouseState.prevPos;
+	this->engineState.deltaTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - this->engineState.prevTime).count();
+	this->engineState.mouse->prevPos = this->engineState.mouse->curPos;
+	glfwGetCursorPos(this->window, &this->engineState.mouse->curPos.x(), &this->engineState.mouse->curPos.y());
+	this->engineState.mouse->deltaPos = this->engineState.mouse->curPos - this->engineState.mouse->prevPos;
 
 	this->handleInteractions();
 
@@ -224,7 +231,7 @@ void Engine::update()
 		{
 			if (!sceneObj->isActive)
 				continue;
-			sceneObj->update();
+			sceneObj->update(this->engineState);
 			if (!sceneObj->isRenderable)
 				continue;
 			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
@@ -240,18 +247,21 @@ void Engine::update()
 		}
 	}
 
+
 	// Update physics
-	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->physicsSettings.start;
-	if (elapsed.count() > this->physicsSettings.fixedDeltaTime)
+	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics->start;
+	if (elapsed.count() > this->engineState.physics->fixedDeltaTime)
 	{
 		for (auto& sceneObj : this->scene.sceneObjects)
 		{
 			if (!sceneObj->isActive)
 				continue;
-			sceneObj->fixedUpdate(this->physicsSettings.fixedDeltaTime);
+			sceneObj->fixedUpdate(this->engineState);
 		}
-		this->physicsSettings.start = std::chrono::high_resolution_clock::now();
+		this->engineState.physics->start = std::chrono::high_resolution_clock::now();
 	}
+
+	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
 }
 
 void Engine::stop()

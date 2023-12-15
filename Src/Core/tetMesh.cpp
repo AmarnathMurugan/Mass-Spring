@@ -43,9 +43,9 @@ void TetMesh::setBuffers()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 }
 
-void TetMesh::update()
+void TetMesh::update(const EngineState& engineState)
 {
-	SceneObject::update();
+	SceneObject::update(engineState);
 	if (this->isDirty)
 	{
 		//computeNormals();

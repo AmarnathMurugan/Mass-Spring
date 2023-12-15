@@ -33,7 +33,7 @@ public:
 					std::unordered_map<int, std::vector<int>>& _vertAdjacency);
 	void generateBuffers();
 	void computeBoundingBox(bool normalizeModel = false);
-	void update();
+	void update(const EngineState& engineState);
 	virtual void render() override;
 	~TriangularMesh();
 };

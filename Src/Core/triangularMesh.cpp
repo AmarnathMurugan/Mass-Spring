@@ -57,9 +57,9 @@ void TriangularMesh::computeBoundingBox(bool normalizeModel)
 	}
 }
 
-void TriangularMesh::update()
+void TriangularMesh::update(const EngineState& engineState)
 {
-	SceneObject::update();
+	SceneObject::update(engineState);
 	if (isDirty)
 	{		
 		// recalculate face normals and update buffer in parallel

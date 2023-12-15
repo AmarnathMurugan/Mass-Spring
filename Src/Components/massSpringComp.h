@@ -10,8 +10,8 @@ class MassSpring : public Component
 public:
 	MassSpring(std::shared_ptr<TetMesh> _tetMesh);
 	virtual void Start() override;
-	virtual void update() override {  }
-	virtual void fixedUpdate(float dt) override;
+	virtual void update(const EngineState& engineState) override {  }
+	virtual void fixedUpdate(const EngineState& engineState) override;
 
 	void calculateMassMatrix();
 	void calculateForces();

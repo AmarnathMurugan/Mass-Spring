@@ -48,10 +48,10 @@ void MassSpring::Start()
 	initJacobian();
 }
 
-void MassSpring::fixedUpdate(float _dt)
+void MassSpring::fixedUpdate(const EngineState& engineState)
 {
 	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
-	dt = _dt;
+	dt = engineState.physics->fixedDeltaTime;
 	this->calculateForces();
 	this->handleCollisions();
 	this->integrate();
@@ -172,14 +172,13 @@ void MassSpring::calculateJacobian()
 		double springLength = springVector.norm();
 		assert(springLength > 0.0);
 		// Compute spring force
-		Eigen::Matrix3d Kii = springVector * springVector.transpose();
+		Eigen::Matrix3d Kii;
 		double l2 = springVector.squaredNorm();
 		double l = sqrt(l2);
-		Kii = Eigen::Matrix3d::Identity() - Kii / l2;
 		if (l < restLengths[i])		
 			Kii = -springVector.normalized() * springVector.normalized().transpose() * this->springStiffness / this->restLengths[i];
 		else
-		Kii = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * Kii) / this->restLengths[i];
+			Kii = (this->springStiffness / this->restLengths[i]) * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * (Eigen::Matrix3d::Identity() - (springVector * springVector.transpose()) / l2)) ;
 		
 		
 		double firstMultiplier = (springs[i].first != this->pinnedVertex || !isPinVertex) ? 1.0f : 0.0f;
@@ -223,7 +222,7 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
-		solver.setTolerance(1e-2);
+		solver.setTolerance(1e-4);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);

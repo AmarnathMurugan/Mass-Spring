@@ -14,21 +14,21 @@ void SceneObject::Start()
     }
 }
 
-void SceneObject::update()
+void SceneObject::update(const EngineState& engineState)
 {
     for (auto component : components)
     {
         if (component->isEnabled)
-            component->update();
+            component->update(engineState);
     }
 }
 
-void SceneObject::fixedUpdate(float dt)
+void SceneObject::fixedUpdate(const EngineState& engineState)
 {
     for (auto component : components)
     {
 		if (component->isEnabled)
-			component->fixedUpdate(dt);
+			component->fixedUpdate(engineState);
 	}
 }
 
