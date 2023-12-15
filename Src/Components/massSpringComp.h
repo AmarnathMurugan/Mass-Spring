@@ -32,10 +32,10 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt = 1.0f / 60.0f;
-	double springStiffness = 60000;
-	double damping = 0.9f;
-	double perVertMass = 1;
-	//double collisionPenalty = 15000000.0;
+	double springStiffness = 30000;
+	double damping = 0.0f;
+	double perVertMass = 5;
+	double collisionPenalty = 15000000.0;
 	bool isPinFirstVertex = false;
 	bool cgSolver = true;
 

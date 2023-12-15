@@ -54,8 +54,8 @@ void MassSpring::fixedUpdate(float _dt)
 	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = _dt;
 	this->calculateForces();
-	this->integrate();
 	this->handleCollisions();
+	this->integrate();
 }
 
 void MassSpring::calculateForces()
@@ -101,9 +101,7 @@ void MassSpring::handleCollisions()
 	{
 		if (this->positions(3 * i + 1) < 0.0)
 		{
-			//this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
-			this->positions(3 * i + 1) = this->damping * std::abs(this->positions(3 * i + 1));
-			this->velocity(3 * i + 1) *= -1 * this->damping;
+			this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
 		}
 	}
 }
@@ -242,7 +240,7 @@ void MassSpring::integrate()
 		this->velocity.segment<3>(0).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->isDirty = true;
-	this->velocity = this->velocity * 0.9;
+	this->velocity = this->velocity * 0.99;
 }
 
 
