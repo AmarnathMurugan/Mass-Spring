@@ -88,8 +88,8 @@ void MassSpring::calculateForces()
 			this->force(3 * springs[i].second + j) -= springForces(j);
 		}		
 	}
-	if(this->isPinFirstVertex)
-		force.segment<3>(0).setZero();
+	if(this->isPinVertex)
+		force.segment<3>(this->pinnedVertex * 3).setZero();
 
 }
 
@@ -182,8 +182,8 @@ void MassSpring::calculateJacobian()
 		Kii = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * Kii) / this->restLengths[i];
 		
 		
-		double firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
-		double secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
+		double firstMultiplier = (springs[i].first != this->pinnedVertex || !isPinVertex) ? 1.0f : 0.0f;
+		double secondMultiplier = (springs[i].second != this->pinnedVertex || !isPinVertex) ? 1.0f : 0.0f;
 
 		addMatrixToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
 		addMatrixToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
@@ -217,13 +217,13 @@ void MassSpring::integrate()
 	this->calculateJacobian();
 	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian);	
 	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force);
-	if (this->isPinFirstVertex)
+	if (this->isPinVertex)
 	{
-		b.segment<3>(0).setZero();
+		b.segment<3>(this->pinnedVertex * 3).setZero();
 	}
 	if (cgSolver)
 	{
-		solver.setTolerance(1e-4);
+		solver.setTolerance(1e-2);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
@@ -234,8 +234,8 @@ void MassSpring::integrate()
 		ldlt_solver.compute(A);
 		this->velocity = ldlt_solver.solve(b);		
 	}
-	if(this->isPinFirstVertex)
-		this->velocity.segment<3>(0).setZero();
+	if(this->isPinVertex)
+		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->isDirty = true;
 	//this->velocity = this->velocity * 0.99;
