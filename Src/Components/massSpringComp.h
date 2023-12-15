@@ -37,7 +37,7 @@ private:
 	double perVertMass = 1.0;
 	double collisionPenalty = 5000000.0;
 	int pinnedVertex = 20;
-	bool isPinVertex = false;
+	bool isPinVertex = true;
 	bool cgSolver = false;
 
 	Eigen::VectorXd force,velocity;

@@ -52,7 +52,8 @@ void MassSpring::update(const EngineState& engineState)
 {
 	if (engineState.keyboard->released.contains(GLFW_KEY_SPACE))
 	{
-		this->isPinVertex = !this->isPinVertex;
+		this->isPinVertex = false;
+		//std::cout << "\nPin Vertex: " << this->isPinVertex << std::endl;
 	}
 }
 
@@ -192,8 +193,8 @@ void MassSpring::calculateJacobian()
 			Kii = (this->springStiffness / this->restLengths[i]) * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * (Eigen::Matrix3d::Identity() - (springVector * springVector.transpose()) / l2)) ;
 		
 		
-		double firstMultiplier = (springs[i].first != this->pinnedVertex || !isPinVertex) ? 1.0f : 0.0f;
-		double secondMultiplier = (springs[i].second != this->pinnedVertex || !isPinVertex) ? 1.0f : 0.0f;
+		double firstMultiplier = (springs[i].first == this->pinnedVertex  && this->isPinVertex) ? 0.0f : 1.0f;
+		double secondMultiplier = (springs[i].second == this->pinnedVertex && this->isPinVertex) ? 0.0f : 1.0f;
 
 		addMatrixToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
 		addMatrixToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
