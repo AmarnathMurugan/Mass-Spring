@@ -18,7 +18,7 @@ public:
 	void handleCollisions();
 	void initJacobian();
 	void calculateJacobian();
-	void addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat,const float& mul,const int& nnz,  bool isAtomic);
+	void addMatrixToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat,const float& mul,const int& nnz,  bool isAtomic);
 	void integrate();
 
 	~MassSpring();

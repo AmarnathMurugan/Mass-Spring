@@ -77,11 +77,7 @@ void MassSpring::calculateForces()
 		assert(springLength > 0.0);
 		
 		// Compute spring force
-		springForces = (this->springStiffness) * (springVector - restLengths[i] * springVector.normalized()) / restLengths[i];
-
-		// Compute damping force
-		//Eigen::Vector3f velocityDifference = this->velocity.segment<3>(3 * springs[i].second) - this->velocity.segment<3>(3 * springs[i].first);
-		//springForces += this->damping *  velocityDifference.dot(springVector) * springVector;
+		springForces = (this->springStiffness / restLengths[i]) * (springVector - restLengths[i] * springVector.normalized());
 
 		for (int j = 0; j < 3; j++)
 		{
@@ -185,31 +181,19 @@ void MassSpring::calculateJacobian()
 			K_spring = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
 		}
 		Kii = K_spring;
+
+		
 		float firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 		float secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 
-		addValueToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
-		addValueToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
-		addValueToJacobian(springs[i].second, springs[i].second, values, Kii, secondMultiplier, nnz, true);
-		addValueToJacobian(springs[i].second, springs[i].first, values, -Kii, secondMultiplier, nnz, false);
-
-		// insert matrix into jacobian
-		/*for (int j = 0; j < 3; j++)
-		{
-			for (int k = 0; k < 3; k++)
-			{				
-				#pragma omp atomic
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].first + k)]] += Kii(j, k) * firstMultiplier;
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].first + j, 3 * springs[i].second + k)]] = -Kii(j, k) * firstMultiplier;
-				#pragma omp atomic
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].second + k)]] += Kii(j, k) * secondMultiplier;
-				values[matrixToValuesMap[std::make_pair(3 * springs[i].second + j, 3 * springs[i].first + k)]] = -Kii(j, k) * secondMultiplier;
-			}
-		}*/
+		addMatrixToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
+		addMatrixToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
+		addMatrixToJacobian(springs[i].second, springs[i].second, values, Kii, secondMultiplier, nnz, true);
+		addMatrixToJacobian(springs[i].second, springs[i].first, values, -Kii, secondMultiplier, nnz, false);
 	}
 }
 
-void MassSpring::addValueToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, const float& mul, const int& nnz, bool isAtomic)
+void MassSpring::addMatrixToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, const float& mul, const int& nnz, bool isAtomic)
 {
 	
 	for (int k = 0; k < 3; k++)

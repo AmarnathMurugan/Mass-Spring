@@ -16,7 +16,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,2,0), 10 ,45);
+	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,.2,0), 5 ,45);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -40,16 +40,9 @@ void Engine::initScene()
 	};
 	std::shared_ptr<BlinnPhongMaterial> teapotMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
 
-	//std::shared_ptr<TriangularMesh> teapot = std::make_shared<TriangularMesh>();
-	//CustomUtils::importObjModel("resources/Models/Teapot/teapot.obj", false, teapot->vertexData.position, teapot->vertexData.normal, teapot->faceIndices,teapot->vertAdjacency);
-	//teapot->computeBoundingBox(true);
-	//teapot->generateBuffers();
-	//teapot->transform.rotate(Eigen::AngleAxis<float>(-PI_F/2,Eigen::Vector3f::UnitX()));
-	//this->scene.addSceneObject(teapot, teapotMat);
-
 	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
 	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
-	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,0.60f,0.0f));
+	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,1.60f,0.0f));
 	this->scene.addSceneObject(tetMesh, teapotMat);
 
 	std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);
