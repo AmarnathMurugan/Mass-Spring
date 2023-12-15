@@ -59,7 +59,7 @@ private:
 	struct PhysicsSettings
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start;
-		double fixedDeltaTime = 1.0 / 60.0;
+		double fixedDeltaTime = 1.0 / 30.0;
 	}physicsSettings;
 
 	struct KeyboardState

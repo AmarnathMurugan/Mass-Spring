@@ -2,8 +2,7 @@
 
 MassSpring::MassSpring(std::shared_ptr<TetMesh> _tetMesh):positions(_tetMesh->tetData.vertices)
 {
-	tetMesh = _tetMesh;
-	//positions = tetMesh->tetData.vertices;
+	tetMesh = _tetMesh;	
 }
 
 void MassSpring::Start()
@@ -99,7 +98,7 @@ void MassSpring::handleCollisions()
 #pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{
-		if (this->positions(3 * i + 1) < 0.0)
+		if (this->positions(3 * i + 1) <= 0.0)
 		{
 			this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
 		}
@@ -178,7 +177,7 @@ void MassSpring::calculateJacobian()
 		double l = sqrt(l2);
 		Kii = Eigen::Matrix3d::Identity() - Kii / l2;
 		if (l < restLengths[i])		
-			Kii = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
+			Kii = -springVector.normalized() * springVector.normalized().transpose() * this->springStiffness / this->restLengths[i];
 		else
 		Kii = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * Kii) / this->restLengths[i];
 		
@@ -224,6 +223,7 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
+		solver.setTolerance(1e-4);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
@@ -238,7 +238,7 @@ void MassSpring::integrate()
 		this->velocity.segment<3>(0).setZero();
 	this->positions += dt * this->velocity;
 	this->tetMesh->isDirty = true;
-	this->velocity = this->velocity * 0.99;
+	//this->velocity = this->velocity * 0.99;
 }
 
 
