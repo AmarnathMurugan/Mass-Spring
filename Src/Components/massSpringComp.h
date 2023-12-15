@@ -18,7 +18,7 @@ public:
 	void handleCollisions();
 	void initJacobian();
 	void calculateJacobian();
-	void addMatrixToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat,const float& mul,const int& nnz,  bool isAtomic);
+	void addMatrixToJacobian(int row, int col, double* values, const Eigen::Matrix3d& mat,const double& mul,const int& nnz,  bool isAtomic);
 	void integrate();
 
 	~MassSpring();
@@ -28,20 +28,21 @@ private:
 
 	// Physical parameters
 	std::vector<std::pair<uint32_t, uint32_t>> springs;
-	std::vector<float> restLengths;
+	std::vector<double> restLengths;
 
-	Eigen::Vector3f gravity = Eigen::Vector3f(0.0f, -9.8f, 0.0f);
-	float dt = 1.0f / 60.0f;
-	float springStiffness = 5000;
-	float damping = 0.0f;
-	float perVertMass = 1.0f;
-	float collisionPenalty = 30000000.0f;
+	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
+	double dt = 1.0f / 60.0f;
+	double springStiffness = 5000;
+	double damping = 0.0f;
+	double perVertMass = 1.50f;
+	double collisionPenalty = 30000000.0f;
 	bool isPinFirstVertex = false;
 	bool cgSolver = true;
 
-	Eigen::VectorXf positions,force,velocity;
+	Eigen::VectorXd force,velocity;
+	Eigen::VectorXd& positions;
 	
-	Eigen::SparseMatrix<float> massMatrix,jacobian;
+	Eigen::SparseMatrix<double> massMatrix,jacobian;
 
 	std::unordered_map<uint32_t, int> matrixToValuesMap;
 

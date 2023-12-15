@@ -31,6 +31,13 @@ void Engine::initScene()
 		{ShaderType::VertexShader, "resources/Shaders/BlinnPhong/blinnPhong.vert"},
 		{ ShaderType::FragmentShader,"resources/Shaders/BlinnPhong/blinnPhong.frag" }
 	});
+
+	std::shared_ptr<Shader> blinnPhongShaderDobulePrecision = std::make_shared<Shader>(
+		std::unordered_map<ShaderType, std::string>
+	{
+		{ShaderType::VertexShader, "resources/Shaders/BlinnPhong/blinnPhongDoublePrecision.vert"},
+		{ ShaderType::FragmentShader,"resources/Shaders/BlinnPhong/blinnPhong.frag" }
+	});
 	
 
 	SurfaceProperties blinnPhongProperties = {
@@ -38,16 +45,17 @@ void Engine::initScene()
 		.specularColor = Eigen::Vector3f(1.0f, 1.0f, 1.0f),
 		.shininess = 50.0f,
 	};
-	std::shared_ptr<BlinnPhongMaterial> teapotMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);
+	std::shared_ptr<BlinnPhongMaterial> tetBlinnMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShaderDobulePrecision, blinnPhongProperties);
 
 	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
 	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
-	tetMesh->initTetMesh(Eigen::Vector3f(0.0f,1.60f,0.0f));
-	this->scene.addSceneObject(tetMesh, teapotMat);
+	tetMesh->initTetMesh(Eigen::Vector3d(0.0,1.6,0.0));
+	this->scene.addSceneObject(tetMesh, tetBlinnMat);
 
 	std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);
 	tetMesh->AddComponent(massSpring);
 
+	
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
 	blinnPhongProperties.shininess = 500.0f;
 	std::shared_ptr<BlinnPhongMaterial> planeMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShader, blinnPhongProperties);

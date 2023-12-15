@@ -12,7 +12,7 @@
 
 
 
-int loadTetMesh(std::string prefix, Eigen::VectorXf& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices,uint32_t& numBdryVerts);
+int loadTetMesh(std::string prefix, Eigen::VectorXd& positions, MatrixX4UIRowMajor& elementIndices, MatrixX3UIRowMajor& bdryFaceIndices, Eigen::VectorXi& faceInteriorVertexIndices,uint32_t& numBdryVerts);
 char ch_cap(char ch);
 bool ch_eqi(char ch1, char ch2);
 int ch_to_digit(char ch);

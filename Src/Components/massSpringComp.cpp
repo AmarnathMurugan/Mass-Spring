@@ -1,8 +1,9 @@
 #include "massSpringComp.h"
 
-MassSpring::MassSpring(std::shared_ptr<TetMesh> _tetMesh)
+MassSpring::MassSpring(std::shared_ptr<TetMesh> _tetMesh):positions(_tetMesh->tetData.vertices)
 {
 	tetMesh = _tetMesh;
+	//positions = tetMesh->tetData.vertices;
 }
 
 void MassSpring::Start()
@@ -50,6 +51,7 @@ void MassSpring::Start()
 
 void MassSpring::fixedUpdate(float _dt)
 {
+	CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = _dt;
 	this->calculateForces();
 	this->handleCollisions();
@@ -71,9 +73,9 @@ void MassSpring::calculateForces()
 	#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
-		Eigen::Vector3f springForces = Eigen::Vector3f::Zero();
-		Eigen::Vector3f springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
-		float springLength = springVector.norm();
+		Eigen::Vector3d springForces = Eigen::Vector3d::Zero();
+		Eigen::Vector3d springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
+		double springLength = springVector.norm();
 		assert(springLength > 0.0);
 		
 		// Compute spring force
@@ -140,7 +142,7 @@ void MassSpring::initJacobian()
 	// Iterate through all non zero elements and get flat index of the first column element of all matrices
 	for (int i = 0; i < jacobian.outerSize(); i++)
 	{
-		for (Eigen::SparseMatrix<float>::InnerIterator it(jacobian, i); it; ++it)
+		for (Eigen::SparseMatrix<double>::InnerIterator it(jacobian, i); it; ++it)
 		{
 			int row = it.row();
 			int col = it.col();
@@ -154,8 +156,8 @@ void MassSpring::initJacobian()
 
 void MassSpring::calculateJacobian()
 {
-	CustomUtils::Stopwatch sw("calculateJacobian");
-	float* values = jacobian.valuePtr();
+	//CustomUtils::Stopwatch sw("calculateJacobian");
+	double* values = jacobian.valuePtr();
 	int nnz = jacobian.nonZeros();
 	#pragma omp parallel
 	for (size_t i = 0; i < nnz; i++)	
@@ -167,15 +169,15 @@ void MassSpring::calculateJacobian()
 	#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
-		Eigen::Vector3f springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
-		float springLength = springVector.norm();
+		Eigen::Vector3d springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
+		double springLength = springVector.norm();
 		assert(springLength > 0.0);
 		// Compute spring force
-		Eigen::Matrix3f Kii = springVector * springVector.transpose();
-		float l2 = springVector.squaredNorm();
-		float l = sqrt(l2);
-		Eigen::Matrix3f term1 = Eigen::Matrix3f::Identity() - Kii / l2;
-		Eigen::Matrix3f K_spring = this->springStiffness * (-Eigen::Matrix3f::Identity() + (this->restLengths[i] / l) * term1) / this->restLengths[i];
+		Eigen::Matrix3d Kii = springVector * springVector.transpose();
+		double l2 = springVector.squaredNorm();
+		double l = sqrt(l2);
+		Eigen::Matrix3d term1 = Eigen::Matrix3d::Identity() - Kii / l2;
+		Eigen::Matrix3d K_spring = this->springStiffness * (-Eigen::Matrix3d::Identity() + (this->restLengths[i] / l) * term1) / this->restLengths[i];
 		if (l < restLengths[i])
 		{
 			K_spring = -springVector.normalized() * springVector.transpose() * this->springStiffness / this->restLengths[i];
@@ -183,8 +185,8 @@ void MassSpring::calculateJacobian()
 		Kii = K_spring;
 
 		
-		float firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
-		float secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
+		double firstMultiplier = (springs[i].first != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
+		double secondMultiplier = (springs[i].second != 0 || !isPinFirstVertex) ? 1.0f : 0.0f;
 
 		addMatrixToJacobian(springs[i].first, springs[i].first, values, Kii, firstMultiplier,nnz, true);
 		addMatrixToJacobian(springs[i].first, springs[i].second, values, -Kii, firstMultiplier, nnz, false);
@@ -193,7 +195,7 @@ void MassSpring::calculateJacobian()
 	}
 }
 
-void MassSpring::addMatrixToJacobian(int row, int col, float* values, const Eigen::Matrix3f& mat, const float& mul, const int& nnz, bool isAtomic)
+void MassSpring::addMatrixToJacobian(int row, int col, double* values, const Eigen::Matrix3d& mat, const double& mul, const int& nnz, bool isAtomic)
 {
 	
 	for (int k = 0; k < 3; k++)
@@ -216,8 +218,8 @@ void MassSpring::addMatrixToJacobian(int row, int col, float* values, const Eige
 void MassSpring::integrate()
 {
 	this->calculateJacobian();
-	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian).cast<double>();	
-	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force).cast<double>();
+	Eigen::SparseMatrix<double> A = (this->massMatrix - dt * dt * this->jacobian);	
+	Eigen::VectorXd b = (this->massMatrix * this->velocity + dt * this->force);
 	if (this->isPinFirstVertex)
 	{
 		b.segment<3>(0).setZero();
@@ -225,17 +227,16 @@ void MassSpring::integrate()
 	if (cgSolver)
 	{
 		solver.compute(A);
-		this->velocity = solver.solveWithGuess(b, this->velocity.cast<double>()).cast<float>();
+		this->velocity = solver.solveWithGuess(b, this->velocity);
 	}
 	else
 	{
 		ldlt_solver.compute(A);
-		this->velocity = ldlt_solver.solve(b).cast<float>();		
+		this->velocity = ldlt_solver.solve(b);		
 	}
 	if(this->isPinFirstVertex)
 		this->velocity.segment<3>(0).setZero();
 	this->positions += dt * this->velocity;
-	this->tetMesh->tetData.vertices = this->positions;
 	this->tetMesh->isDirty = true;
 }
 

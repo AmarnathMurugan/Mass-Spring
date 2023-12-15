@@ -10,14 +10,14 @@ public:
 	void setBuffers();
 	virtual void update() override;
 	void computeNormals();
-	void initTetMesh(Eigen::Vector3f offset = Eigen::Vector3f::Zero());
-	void offsetVertices(const Eigen::Vector3f& offset);
+	void initTetMesh(Eigen::Vector3d offset = Eigen::Vector3d::Zero());
+	void offsetVertices(const Eigen::Vector3d& offset);
 	virtual void render() override;
 
 public:
 	struct TetData
 	{
-		Eigen::VectorXf vertices;
+		Eigen::VectorXd vertices;
 		MatrixX3fRowMajor normals;
 		MatrixX4UIRowMajor tetrahedra;
 		MatrixX3UIRowMajor faces;
