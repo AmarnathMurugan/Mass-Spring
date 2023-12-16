@@ -7,6 +7,7 @@
 #include "unlitMaterial.h"
 #include "blinnPhongMaterial.h"
 #include "massSpringComp.h"
+#include "massSpringAdmmComp.h"
 
 
 class Engine

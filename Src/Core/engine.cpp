@@ -57,7 +57,7 @@ void Engine::initScene()
 	tetMesh->initTetMesh(Eigen::Vector3d(0.0,3.,0.0));
 	this->scene.addSceneObject(tetMesh, tetBlinnMat);
 
-	std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);
+	std::shared_ptr<MassSpringADMM> massSpring = std::make_shared<MassSpringADMM>(tetMesh);
 	tetMesh->AddComponent(massSpring);
 
 	

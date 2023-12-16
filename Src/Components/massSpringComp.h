@@ -34,8 +34,7 @@ private:
 	double dt;
 	double springStiffness = 30000;
 	double damping = 0.0f;
-	double perVertMass = 1.0;
-	double collisionPenalty = 5000000.0;
+	double perVertexMass = 1.0;
 	int pinnedVertex = 20;
 	bool isPinVertex = true;
 	bool cgSolver = false;

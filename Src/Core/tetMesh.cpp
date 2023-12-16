@@ -143,6 +143,15 @@ void TetMesh::initTetMesh(Eigen::Vector3d offset)
 		this->tetData.vertAdjacency[this->tetData.tetrahedra(i, 3)].emplace(this->tetData.tetrahedra(i, 2));
 	}
 
+	// find max number of adjacent vertices
+	int maxNumAdjVertices = 0;
+	for (auto& vertAdj : this->tetData.vertAdjacency)
+	{
+		if (vertAdj.second.size() > maxNumAdjVertices)
+			maxNumAdjVertices = vertAdj.second.size();
+	}
+	this->tetData.maxVertexNeighbors = maxNumAdjVertices;
+
 }
 
 void TetMesh::offsetVertices(const Eigen::Vector3d& offset)

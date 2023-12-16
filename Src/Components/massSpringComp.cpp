@@ -37,7 +37,6 @@ void MassSpring::Start()
 		assert(restLengths.back() > 0.0);
 	}
 
-	positions = tetMesh->tetData.vertices;
 	velocity.resizeLike(positions);
 	velocity.setZero();
 	force.resizeLike(positions);
@@ -234,7 +233,7 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
-		solver.setTolerance(1e-6);
+		//solver.setTolerance(1e-3);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
@@ -263,7 +262,7 @@ void MassSpring::calculateMassMatrix()
 	// Make diagonal entries of mass matrix equal to 1
 	for (int i = 0; i < positions.size(); i++)
 	{
-		massMatrix.insert(i, i) = perVertMass;
+		massMatrix.insert(i, i) = perVertexMass;
 	}
 
 	massMatrix.makeCompressed();

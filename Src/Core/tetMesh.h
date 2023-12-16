@@ -24,7 +24,7 @@ public:
 		MatrixX3UIRowMajor faces;
 		Eigen::VectorXi faceInteriorVertexIndices;
 		std::unordered_map<int, std::unordered_set<int>> vertAdjacency;
-		uint32_t numBdryVertices;
+		uint32_t numBdryVertices, maxVertexNeighbors;
 	}tetData;
 	bool isDirty = false;
 
