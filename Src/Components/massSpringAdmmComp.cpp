@@ -217,10 +217,11 @@ void MassSpringADMM::integrate()
 {
 	for (size_t i = 0; i < 5; i++)
 	{
+		this->inertia = this->positions + this->dt * this->velocity;
 		this->optimizeD();
 		this->optimizeX();	
-
 	}
+	this->velocity *= 0.99;
 	this->tetMesh->isDirty = true;
 
 }
@@ -231,7 +232,7 @@ void MassSpringADMM::optimizeD()
 	#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
-		Eigen::Vector3d springVector = this->positions.segment<3>(3 * springs[i].first) - this->positions.segment<3>(3 * springs[i].second);
+		Eigen::Vector3d springVector = this->inertia.segment<3>(3 * springs[i].first) - this->inertia.segment<3>(3 * springs[i].second);
 		double springLength = springVector.norm();
 		assert(springLength > 0.0);
 
@@ -242,7 +243,7 @@ void MassSpringADMM::optimizeD()
 
 void MassSpringADMM::optimizeX()
 {
-	this->inertia = this->positions + this->dt * this->velocity;
+	
 	//if(this->isPinVertex)
 	//	this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;
@@ -263,10 +264,10 @@ void MassSpringADMM::handleCollisions()
 	#pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{
-		if (positions(3 * i + 1) < 0.0)
+		if (positions(3 * i + 1) <= 0.0)
 		{
 			positions(3 * i + 1) = std::abs(positions(3 * i + 1)) * 0.8;
-			velocity(3 * i + 1) *= -0.8;
+			velocity.segment<3>(3*i) *= -0.8;
 		}
 	}
 }
