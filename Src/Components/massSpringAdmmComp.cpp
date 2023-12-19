@@ -39,7 +39,7 @@ void MassSpringADMM::Start()
 		restLengths.push_back((positions.segment<3>(3 * spring.first) - positions.segment<3>(3 * spring.second)).norm());
 	}	
 
-	this->dt  /= this->numADMMIterations;
+	//this->dt  /= this->numADMMIterations;
 
 	velocity.resizeLike(positions);
 	velocity.setZero();
@@ -149,25 +149,33 @@ void MassSpringADMM::calculateForces()
 
 void MassSpringADMM::integrate()
 {
+	this->oldPos = Eigen::VectorXd(this->positions);
 	double prevEnergy = this->calculateEnergy();
 	double energy;
+	this->inertia = this->positions + this->dt * this->velocity;
+	if(this->isPinVertex)
+		this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 	for (size_t i = 0; i < this->numADMMIterations; i++)
 	{
-		this->inertia = this->positions + this->dt * this->velocity;
-		if(this->isPinVertex)
-			this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 		this->optimizeD();
 		this->optimizeX();
 		energy = this->calculateEnergy();
 		double diff = std::abs(prevEnergy - energy);
-		if (diff < 1e-6)
+		if (diff < 1e-10)
 		{
 			std::cout << "\nConverged in " << i << " iterations" << std::endl;
+			break;
 		}
 		if(i==this->numADMMIterations - 1)
 			std::cout << "Energy resisual at end of step:" << diff << std::endl;
 		prevEnergy = energy;
 	}
+	if (this->isPinVertex)
+		this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
+	this->velocity = (this->positions - this->oldPos) / this->dt;
+	if (this->isPinVertex)
+		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
+	this->handleCollisions();
 	this->velocity *= 0.99;
 	this->tetMesh->isDirty = true;
 
@@ -179,9 +187,8 @@ void MassSpringADMM::optimizeD()
 	#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
-		Eigen::Vector3d springVector = this->inertia.segment<3>(3 * springs[i].first) - this->inertia.segment<3>(3 * springs[i].second);
-		double springLength = springVector.norm();
-		assert(springLength > 0.0);
+		Eigen::Vector3d springVector = this->positions.segment<3>(3 * springs[i].first) - this->positions.segment<3>(3 * springs[i].second);
+		assert(springVector.squaredNorm() > 0.0);
 
 		// Compute spring force
 		this->D.segment<3>(3 * i) = this->restLengths[i] * springVector.normalized();
@@ -191,15 +198,9 @@ void MassSpringADMM::optimizeD()
 void MassSpringADMM::optimizeX()
 {
 
-	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;
-	this->oldPos = Eigen::VectorXd(this->positions);
+	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;	
 	this->positions = this->lltSolver.solve(this->b);
-	if(this->isPinVertex)
-		this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
-	this->velocity = (this->positions - this->oldPos) / this->dt;
-	if(this->isPinVertex)
-		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
-	this->handleCollisions();
+	
 }
 
 

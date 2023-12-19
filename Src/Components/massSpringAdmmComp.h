@@ -44,5 +44,5 @@ private:
 	Eigen::SparseMatrix<double> massMatrix, weightedLaplacianTerm, J;
 
 	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> lltSolver;
-	int numADMMIterations = 200;
+	int numADMMIterations = 20;
 };
