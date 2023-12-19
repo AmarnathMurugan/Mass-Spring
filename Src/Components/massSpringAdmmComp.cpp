@@ -32,10 +32,12 @@ void MassSpringADMM::Start()
 	for (std::pair<uint32_t, uint32_t> curSpr : uniqueSprings)
 	{
 		springs.emplace_back(curSpr);
-		restLengths.emplace_back((tetMesh->tetData.vertices.segment<3>(3 * curSpr.first) - tetMesh->tetData.vertices.segment<3>(3 * curSpr.second)).norm());
-		auto test = (tetMesh->tetData.vertices.segment<3>(3 * curSpr.first) - tetMesh->tetData.vertices.segment<3>(3 * curSpr.second)).norm();
-		assert(restLengths.back() > 0.0);
 	}
+
+	for (auto& spring : springs)
+	{
+		restLengths.push_back((positions.segment<3>(3 * spring.first) - positions.segment<3>(3 * spring.second)).norm());
+	}	
 
 	velocity.resizeLike(positions);
 	velocity.setZero();
@@ -54,6 +56,10 @@ void MassSpringADMM::Start()
 	
 	this->preComputeMatrices();
 	this->calculateForces();
+
+	double energy = 0.5 * this->positions.transpose() * this->weightedLaplacianTerm * this->positions;
+	energy -= this->positions.transpose() * this->J * this->D;
+	energy += this->positions.transpose() * this->force;
 }
 
 void MassSpringADMM::update(const EngineState& engineState)
@@ -80,40 +86,112 @@ void MassSpringADMM::preComputeMatrices()
 	this->massMatrix.makeCompressed();
 
 	// Compute laplacian matrix
-	this->weightedLaplacianTerm.resize(this->positions.size(), this->positions.size());
-	this->weightedLaplacianTerm.reserve(Eigen::VectorXi::Constant(this->positions.size(), this->tetMesh->tetData.maxVertexNeighbors));
-	double multiplier = this->springStiffness * this->dt * this->dt;
-	for (auto& vertAdj : this->tetMesh->tetData.vertAdjacency)
-	{
-		for (auto& adjVert : vertAdj.second)
-		{
-			this->weightedLaplacianTerm.insert(vertAdj.first, adjVert) = -multiplier;
-			this->weightedLaplacianTerm.insert(vertAdj.first + 1, adjVert + 1) = -multiplier;
-			this->weightedLaplacianTerm.insert(vertAdj.first + 2, adjVert + 2) = -multiplier;
-		}
-		this->weightedLaplacianTerm.insert(vertAdj.first, vertAdj.first) = (double)vertAdj.second.size() * multiplier;
-		this->weightedLaplacianTerm.insert(vertAdj.first + 1, vertAdj.first + 1) = (double)vertAdj.second.size() * multiplier;
-		this->weightedLaplacianTerm.insert(vertAdj.first + 2, vertAdj.first + 2) = (double)vertAdj.second.size() * multiplier;
-	}
-	this->weightedLaplacianTerm.makeCompressed();
-	this->weightedLaplacianTerm = this->massMatrix +  this->weightedLaplacianTerm;
-	this->weightedLaplacianTerm.makeCompressed();
-	this->lltSolver.compute(this->weightedLaplacianTerm);
+	this->computeLaplacianTerm();
 
 	// Compute J
 	this->J.resize(this->positions.size(), 3 * this->springs.size());
-	this->J.reserve(Eigen::VectorXi::Constant(this->positions.size(), 2));
-	for (int i = 0; i < this->springs.size(); i++)
+	this->J.reserve(Eigen::VectorXi::Constant(3 * this->springs.size(), 2));
+	
+	int springIndex = 0;
+	for (auto& spring : this->springs)
 	{
-		this->J.insert(this->springs[i].first, 3 * i) = multiplier;
-		this->J.insert(this->springs[i].first + 1, 3 * i + 1) = multiplier;
-		this->J.insert(this->springs[i].first + 2, 3 * i + 2) = multiplier;
-
-		this->J.insert(this->springs[i].second, 3 * i) = -multiplier;
-		this->J.insert(this->springs[i].second + 1, 3 * i + 1) = -multiplier;
-		this->J.insert(this->springs[i].second + 2, 3 * i + 2) = -multiplier;
+		for (size_t i = 0; i < 3; i++)
+		{
+			this->J.insert(3 * spring.first + i, 3 * springIndex+i) = this->springStiffness;
+			this->J.insert(3 * spring.second + i, 3 * springIndex+i) = -this->springStiffness; 
+		}
+		springIndex++;
 	}
 	this->J.makeCompressed();
+
+	this->computeD();
+	
+	Eigen::MatrixXd Jdense = Eigen::MatrixXd(this->J);
+	Eigen::MatrixXd test;
+	test.resize(this->positions.size()/3, this->springs.size());
+	test.setZero();
+	Eigen::VectorXd A,S;
+	A.resize(this->positions.size() / 3);
+	S.resize(this->springs.size());
+	springIndex = 0;
+	for (auto& spring : this->springs)
+	{
+		A.setZero();
+		A(spring.first) = 1.0;
+		A(spring.second) = -1.0;
+		S.setZero();
+		S(springIndex++) = 1.0;
+		test += A * S.transpose();
+	}
+	test *= this->springStiffness;
+	Eigen::MatrixXd finalMat;
+	finalMat.resize(this->positions.size(), 3*this->springs.size());
+	finalMat.setZero();
+	for (int i = 0; i < this->positions.size() / 3; i++)
+	{
+		for (int j = 0; j < this->springs.size(); j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				finalMat(3 * i + k, 3 * j + k) = test(i, j);
+			}
+		}
+	}
+	double norm = (finalMat - Jdense).norm();
+	assert(norm < 1e-10);
+
+}
+
+
+void MassSpringADMM::computeLaplacianTerm()
+{
+	this->weightedLaplacianTerm.resize(this->positions.size(), this->positions.size());
+	this->weightedLaplacianTerm.reserve(Eigen::VectorXi::Constant(this->positions.size(), this->tetMesh->tetData.maxVertexNeighbors));
+	double multiplier = this->springStiffness;
+	for (auto& spring : this->springs)
+	{
+		for (size_t i = 0; i < 3; i++)
+		{
+			this->weightedLaplacianTerm.coeffRef(3 * spring.first + i, 3 * spring.first + i) += multiplier;
+			this->weightedLaplacianTerm.coeffRef(3 * spring.second + i, 3 * spring.second + i) += multiplier;
+			this->weightedLaplacianTerm.coeffRef(3 * spring.first + i, 3 * spring.second + i) = -multiplier;
+			this->weightedLaplacianTerm.coeffRef(3 * spring.second + i, 3 * spring.first + i) = -multiplier;
+		}
+	}
+	this->weightedLaplacianTerm.makeCompressed();
+	int nnz = this->weightedLaplacianTerm.nonZeros();
+	Eigen::SparseMatrix<double> Amat = this->massMatrix + this->dt * this->dt * this->weightedLaplacianTerm;
+	int nnz1 = Amat.nonZeros();
+	this->lltSolver.compute(Amat);
+
+	Eigen::MatrixXd laplacianTerm = Eigen::MatrixXd(this->weightedLaplacianTerm);
+	Eigen::MatrixXd test,finalMat;
+	test.resize(this->positions.size()/3, this->positions.size()/3);
+	test.setZero();
+	Eigen::VectorXd A;
+	A.resize(this->positions.size()/3);
+	for (auto& spring : this->springs)
+	{
+		A.setZero();
+		A(spring.first) = 1.0;
+		A(spring.second) = -1.0;
+		test += A * A.transpose();
+	}
+	test *= this->springStiffness;
+	finalMat.resize(this->positions.size(), this->positions.size());
+	finalMat.setZero();
+	for (int i = 0; i < this->positions.size() / 3; i++)
+	{
+		for (int j = 0; j < this->positions.size() / 3; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				finalMat(3 * i + k, 3 * j + k) = test(i, j);
+			}
+		}
+	}
+	double norm = (finalMat - laplacianTerm).norm();
+	assert(norm < 1e-10);
 }
 
 void MassSpringADMM::calculateForces()
@@ -135,11 +213,13 @@ void MassSpringADMM::integrate()
 {
 	this->computeD();
 	this->inertia = this->positions + this->dt * this->velocity;
-	this->b = this->J * this->D + this->massMatrix * this->inertia + this-> force * this->dt * this->dt;
-	auto oldPos = this->positions;
+	double testnorm = (this->inertia - this->positions).norm();
+	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;
+	this->oldPos = Eigen::VectorXd(this->positions);
 	this->positions = this->lltSolver.solve(this->b);
 	this->velocity = (this->positions - this->oldPos) / this->dt;
-	this->velocity *= 0.99;
+	double velocityNorm = this->velocity.norm();
+	//this->velocity *= 0.99;
 	this->tetMesh->isDirty = true;
 
 }
@@ -147,10 +227,11 @@ void MassSpringADMM::integrate()
 void MassSpringADMM::computeD()
 {
 	// iterate through all springs and compute D
-	#pragma omp parallel for
+	D.setZero();
+	//#pragma omp parallel for
 	for (int i = 0; i < springs.size(); i++)
 	{
-		Eigen::Vector3d springVector = positions.segment<3>(3 * springs[i].second) - positions.segment<3>(3 * springs[i].first);
+		Eigen::Vector3d springVector = this->positions.segment<3>(3 * springs[i].first) - this->positions.segment<3>(3 * springs[i].second);
 		double springLength = springVector.norm();
 		assert(springLength > 0.0);
 
@@ -158,6 +239,7 @@ void MassSpringADMM::computeD()
 		this->D.segment<3>(3 * i) = this->restLengths[i] * springVector.normalized();
 	}
 }
+
 
 void MassSpringADMM::handleCollisions()
 {

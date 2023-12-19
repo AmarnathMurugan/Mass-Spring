@@ -17,6 +17,7 @@ public:
 	void calculateForces();
 	void integrate();
 	void computeD();
+	void computeLaplacianTerm();
 	void handleCollisions();
 
 private:
@@ -28,11 +29,11 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt = 1.0 / 60.0;
-	double springStiffness = 30000;
+	double springStiffness = 1000;
 	double damping = 0.0f;
 	double perVertexMass = 1.0;
 	double collisionPenalty = 5000000.0;
-	int pinnedVertex = 20;
+	int pinnedVertex = 0;
 	bool isPinVertex = false;
 
 	Eigen::VectorXd force, velocity, inertia,D,b,oldPos;
@@ -40,5 +41,6 @@ private:
 
 	Eigen::SparseMatrix<double> massMatrix, weightedLaplacianTerm, J;
 
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> lltSolver;
+	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> lltSolver;
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cgSolver;
 };
