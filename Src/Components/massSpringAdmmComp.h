@@ -20,6 +20,7 @@ public:
 	void optimizeX();
 	void computeLaplacianTerm();
 	void handleCollisions();
+	double calculateEnergy();
 
 private:
 	std::shared_ptr<TetMesh> tetMesh;
@@ -43,5 +44,5 @@ private:
 	Eigen::SparseMatrix<double> massMatrix, weightedLaplacianTerm, J;
 
 	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> lltSolver;
-	int numADMMIterations = 20;
+	int numADMMIterations = 200;
 };

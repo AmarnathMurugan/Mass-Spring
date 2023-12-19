@@ -233,14 +233,14 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
-		//solver.setTolerance(1e-3);
+		solver.setMaxIterations(20);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
 	}
 	else
 	{
-		CustomUtils::Stopwatch sw("ldlt solve");
+		//CustomUtils::Stopwatch sw("ldlt solve");
 		ldlt_solver.compute(A);
 		this->velocity = ldlt_solver.solve(b);		
 	}

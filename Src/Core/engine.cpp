@@ -53,7 +53,7 @@ void Engine::initScene()
 	std::shared_ptr<BlinnPhongMaterial> tetBlinnMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShaderDobulePrecision, blinnPhongProperties);
 
 	std::shared_ptr<TetMesh> tetMeshADMM = std::make_shared<TetMesh>();
-	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMeshADMM->tetData.vertices, tetMeshADMM->tetData.tetrahedra, tetMeshADMM->tetData.faces, tetMeshADMM->tetData.faceInteriorVertexIndices, tetMeshADMM->tetData.numBdryVertices);
+	loadTetMesh("resources/Models/TetMesh/Dragon/dragon", tetMeshADMM->tetData.vertices, tetMeshADMM->tetData.tetrahedra, tetMeshADMM->tetData.faces, tetMeshADMM->tetData.faceInteriorVertexIndices, tetMeshADMM->tetData.numBdryVertices);
 	tetMeshADMM->initTetMesh(Eigen::Vector3d(1.0,3.,0.0));
 	this->scene.addSceneObject(tetMeshADMM, tetBlinnMat);
 	std::shared_ptr<MassSpringADMM> massSpring = std::make_shared<MassSpringADMM>(tetMeshADMM);	
