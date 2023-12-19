@@ -30,7 +30,7 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt = 1.0 / 60.0;
-	double springStiffness = 300000;
+	double springStiffness = 200000;
 	double damping = 0.0f;
 	double perVertexMass = 1;
 	double collisionPenalty = 5000000.0;
