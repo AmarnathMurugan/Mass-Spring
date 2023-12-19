@@ -58,7 +58,7 @@ void MassSpring::update(const EngineState& engineState)
 
 void MassSpring::fixedUpdate(const EngineState& engineState)
 {
-	//CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
+	CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = engineState.physics->fixedDeltaTime;
 	this->calculateForces();
 	this->integrate();
@@ -103,7 +103,7 @@ void MassSpring::calculateForces()
 
 void MassSpring::handleCollisions()
 {
-	float restitution = 0.9;
+	float restitution = 0.99;
 #pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{

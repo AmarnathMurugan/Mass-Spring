@@ -60,7 +60,7 @@ void MassSpringADMM::Start()
 	this->calculateForces();
 
 	double energy = 0.5 * this->positions.transpose() * this->weightedLaplacianTerm * this->positions;
-	energy -= this->positions.transpose() * this->J * this->D;
+	energy -= 0.5 * this->positions.transpose() * this->J * this->D;
 	energy += this->positions.transpose() * this->force;
 }
 
@@ -72,10 +72,8 @@ void MassSpringADMM::update(const EngineState& engineState)
 
 void MassSpringADMM::fixedUpdate(const EngineState& engineState)
 {
-	//CustomUtils::Stopwatch sw("MassSpringADMM::fixedUpdate");
-
+	CustomUtils::Stopwatch sw("MassSpringADMM::fixedUpdate");
 	this->integrate();
-	//this->handleCollisions();
 }
 
 void MassSpringADMM::preComputeMatrices()
@@ -107,43 +105,8 @@ void MassSpringADMM::preComputeMatrices()
 		springIndex++;
 	}
 	this->J.makeCompressed();
-
+	this->inertia = this->positions;
 	this->optimizeD();
-	
-	/*Eigen::MatrixXd Jdense = Eigen::MatrixXd(this->J);
-	Eigen::MatrixXd test;
-	test.resize(this->positions.size()/3, this->springs.size());
-	test.setZero();
-	Eigen::VectorXd A,S;
-	A.resize(this->positions.size() / 3);
-	S.resize(this->springs.size());
-	springIndex = 0;
-	for (auto& spring : this->springs)
-	{
-		A.setZero();
-		A(spring.first) = 1.0;
-		A(spring.second) = -1.0;
-		S.setZero();
-		S(springIndex++) = 1.0;
-		test += A * S.transpose();
-	}
-	test *= this->springStiffness;
-	Eigen::MatrixXd finalMat;
-	finalMat.resize(this->positions.size(), 3*this->springs.size());
-	finalMat.setZero();
-	for (int i = 0; i < this->positions.size() / 3; i++)
-	{
-		for (int j = 0; j < this->springs.size(); j++)
-		{
-			for (int k = 0; k < 3; k++)
-			{
-				finalMat(3 * i + k, 3 * j + k) = test(i, j);
-			}
-		}
-	}
-	double norm = (finalMat - Jdense).norm();
-	assert(norm < 1e-10);*/
-
 }
 
 
@@ -167,35 +130,6 @@ void MassSpringADMM::computeLaplacianTerm()
 	Eigen::SparseMatrix<double> Amat = this->massMatrix + this->dt * this->dt * this->weightedLaplacianTerm;
 	int nnz1 = Amat.nonZeros();
 	this->lltSolver.compute(Amat);
-
-	//Eigen::MatrixXd laplacianTerm = Eigen::MatrixXd(this->weightedLaplacianTerm);
-	//Eigen::MatrixXd test,finalMat;
-	//test.resize(this->positions.size()/3, this->positions.size()/3);
-	//test.setZero();
-	//Eigen::VectorXd A;
-	//A.resize(this->positions.size()/3);
-	//for (auto& spring : this->springs)
-	//{
-	//	A.setZero();
-	//	A(spring.first) = 1.0;
-	//	A(spring.second) = -1.0;
-	//	test += A * A.transpose();
-	//}
-	//test *= this->springStiffness;
-	//finalMat.resize(this->positions.size(), this->positions.size());
-	//finalMat.setZero();
-	//for (int i = 0; i < this->positions.size() / 3; i++)
-	//{
-	//	for (int j = 0; j < this->positions.size() / 3; j++)
-	//	{
-	//		for (int k = 0; k < 3; k++)
-	//		{
-	//			finalMat(3 * i + k, 3 * j + k) = test(i, j);
-	//		}
-	//	}
-	//}
-	//double norm = (finalMat - laplacianTerm).norm();
-	//assert(norm < 1e-10);
 }
 
 void MassSpringADMM::calculateForces()
@@ -215,9 +149,11 @@ void MassSpringADMM::calculateForces()
 
 void MassSpringADMM::integrate()
 {
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < this->numADMMIterations; i++)
 	{
 		this->inertia = this->positions + this->dt * this->velocity;
+		if(this->isPinVertex)
+			this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 		this->optimizeD();
 		this->optimizeX();	
 	}
@@ -243,14 +179,12 @@ void MassSpringADMM::optimizeD()
 
 void MassSpringADMM::optimizeX()
 {
-	
-	//if(this->isPinVertex)
-	//	this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
+
 	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;
 	this->oldPos = Eigen::VectorXd(this->positions);
 	this->positions = this->lltSolver.solve(this->b);
-	//if(this->isPinVertex)
-	//	this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
+	if(this->isPinVertex)
+		this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
 	this->velocity = (this->positions - this->oldPos) / this->dt;
 	if(this->isPinVertex)
 		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
@@ -266,8 +200,8 @@ void MassSpringADMM::handleCollisions()
 	{
 		if (positions(3 * i + 1) <= 0.0)
 		{
-			positions(3 * i + 1) = std::abs(positions(3 * i + 1)) * 0.8;
-			velocity.segment<3>(3*i) *= -0.8;
+			positions(3 * i + 1) = std::abs(positions(3 * i + 1)) * 0.1;
+			velocity.segment<3>(3*i) *= -0.1;
 		}
 	}
 }

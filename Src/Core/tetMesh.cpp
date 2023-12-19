@@ -1,5 +1,12 @@
 #include "tetMesh.h"
 
+TetMesh::TetMesh(const TetMesh& other)
+{
+	this->tetData = other.tetData;
+	this->isDirty = other.isDirty;
+	setBuffers();
+}
+
 void TetMesh::normalizeModel()
 {
 	// Compute bounding box

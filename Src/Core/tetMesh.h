@@ -6,6 +6,8 @@
 class TetMesh : public SceneObject
 {
 public:
+	TetMesh() = default;
+	TetMesh(const TetMesh& other);
 	void normalizeModel();
 	void setBuffers();
 	virtual void update(const EngineState& engineState) override;

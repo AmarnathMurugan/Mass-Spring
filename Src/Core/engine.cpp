@@ -21,7 +21,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,.2,0), 6 ,45);
+	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,1.2,0), 6 ,45);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -52,14 +52,20 @@ void Engine::initScene()
 	};
 	std::shared_ptr<BlinnPhongMaterial> tetBlinnMat = std::make_shared<BlinnPhongMaterial>(blinnPhongShaderDobulePrecision, blinnPhongProperties);
 
-	std::shared_ptr<TetMesh> tetMesh = std::make_shared<TetMesh>();
-	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMesh->tetData.vertices, tetMesh->tetData.tetrahedra, tetMesh->tetData.faces, tetMesh->tetData.faceInteriorVertexIndices, tetMesh->tetData.numBdryVertices);
-	tetMesh->initTetMesh(Eigen::Vector3d(0.0,3.,0.0));
-	this->scene.addSceneObject(tetMesh, tetBlinnMat);
+	std::shared_ptr<TetMesh> tetMeshADMM = std::make_shared<TetMesh>();
+	loadTetMesh("resources/Models/TetMesh/Bunny/bunny", tetMeshADMM->tetData.vertices, tetMeshADMM->tetData.tetrahedra, tetMeshADMM->tetData.faces, tetMeshADMM->tetData.faceInteriorVertexIndices, tetMeshADMM->tetData.numBdryVertices);
+	tetMeshADMM->initTetMesh(Eigen::Vector3d(1.0,3.,0.0));
+	this->scene.addSceneObject(tetMeshADMM, tetBlinnMat);
+	std::shared_ptr<MassSpringADMM> massSpring = std::make_shared<MassSpringADMM>(tetMeshADMM);	
+	tetMeshADMM->AddComponent(massSpring);
 
-	std::shared_ptr<MassSpringADMM> massSpring = std::make_shared<MassSpringADMM>(tetMesh);
-	//std::shared_ptr<MassSpring> massSpring = std::make_shared<MassSpring>(tetMesh);
-	tetMesh->AddComponent(massSpring);
+	std::shared_ptr<TetMesh> tetMeshNewton = std::make_shared<TetMesh>(*tetMeshADMM);
+	tetMeshNewton->offsetVertices(Eigen::Vector3d(-2.0, 0.0, 0.0));
+	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 0.2f, 1.0f);
+	std::shared_ptr<BlinnPhongMaterial> tetBlinnMatNewton = std::make_shared<BlinnPhongMaterial>(blinnPhongShaderDobulePrecision, blinnPhongProperties);
+	this->scene.addSceneObject(tetMeshNewton, tetBlinnMatNewton);
+	std::shared_ptr<MassSpring> massSpringNewton = std::make_shared<MassSpring>(tetMeshNewton);
+	tetMeshNewton->AddComponent(massSpringNewton);
 
 	
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
