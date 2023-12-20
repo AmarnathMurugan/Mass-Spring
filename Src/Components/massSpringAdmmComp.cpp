@@ -68,10 +68,16 @@ void MassSpringADMM::update(const EngineState& engineState)
 {
 	if(engineState.keyboard->released.contains(GLFW_KEY_SPACE))
 		this->isPinVertex = false;
+	if (engineState.keyboard->released.contains(GLFW_KEY_ENTER))
+	{
+		this->isSimulate = true;
+	}
 }
 
 void MassSpringADMM::fixedUpdate(const EngineState& engineState)
 {
+	if (!this->isSimulate)
+		return;
 	CustomUtils::Stopwatch sw("MassSpringADMM::fixedUpdate");
 	this->integrate();
 }

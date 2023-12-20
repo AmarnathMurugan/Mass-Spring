@@ -32,12 +32,13 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt;
-	double springStiffness = 10000;
+	double springStiffness = 5000;
 	double damping = 0.0f;
 	double perVertexMass = 1.0;
 	int pinnedVertex = 100;
 	bool isPinVertex = true;
 	bool cgSolver = false;
+	bool isSimulate = false;
 
 	Eigen::VectorXd force,velocity;
 	Eigen::VectorXd& positions;
