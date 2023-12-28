@@ -7,9 +7,7 @@ MassSpringADMM::MassSpringADMM(std::shared_ptr<TetMesh> _tetMesh) : positions(_t
 
 void MassSpringADMM::Start()
 {
-	std::cout << "\nMassSpringADMM Start" << std::endl;
 	// Find all unique springs
-
 	std::unordered_set<std::pair<uint32_t, uint32_t>, CustomUtils::PairHash> uniqueSprings;
 	std::pair<uint32_t, uint32_t> currSpring;
 	for (uint32_t i = 0; i < tetMesh->tetData.tetrahedra.rows(); i++)
@@ -27,19 +25,19 @@ void MassSpringADMM::Start()
 		}
 	}
 	std::cout << "\nNumber of unique springs: " << uniqueSprings.size() << std::endl;
-
-	// Compute rest lengths
+	
 	for (std::pair<uint32_t, uint32_t> curSpr : uniqueSprings)
 	{
 		springs.emplace_back(curSpr);
 	}
 
+	// Compute rest lengths
 	for (auto& spring : springs)
 	{
 		restLengths.push_back((positions.segment<3>(3 * spring.first) - positions.segment<3>(3 * spring.second)).norm());
 	}	
 
-	//this->dt  /= this->numADMMIterations;
+	this->dt  /= this->numADMMIterations;
 
 	velocity.resizeLike(positions);
 	velocity.setZero();
@@ -58,20 +56,17 @@ void MassSpringADMM::Start()
 	
 	this->preComputeMatrices();
 	this->calculateForces();
-
-	double energy = 0.5 * this->positions.transpose() * this->weightedLaplacianTerm * this->positions;
-	energy -= 0.5 * this->positions.transpose() * this->J * this->D;
-	energy += this->positions.transpose() * this->force;
 }
 
 void MassSpringADMM::update(const EngineState& engineState)
 {
-	if(engineState.keyboard->released.contains(GLFW_KEY_SPACE))
-		this->isPinVertex = false;
-	if (engineState.keyboard->released.contains(GLFW_KEY_ENTER))
+	if (engineState.keyboard->released.contains(GLFW_KEY_SPACE))
 	{
-		this->isSimulate = true;
+		this->isPinVertex = false;
+		this->calculateForces();
 	}
+	if (engineState.keyboard->released.contains(GLFW_KEY_ENTER))	
+		this->isSimulate = true;	
 }
 
 void MassSpringADMM::fixedUpdate(const EngineState& engineState)
@@ -98,8 +93,7 @@ void MassSpringADMM::preComputeMatrices()
 
 	// Compute J
 	this->J.resize(this->positions.size(), 3 * this->springs.size());
-	this->J.reserve(Eigen::VectorXi::Constant(3 * this->springs.size(), 2));
-	
+	this->J.reserve(Eigen::VectorXi::Constant(3 * this->springs.size(), 2));	
 	int springIndex = 0;
 	for (auto& spring : this->springs)
 	{
@@ -111,6 +105,7 @@ void MassSpringADMM::preComputeMatrices()
 		springIndex++;
 	}
 	this->J.makeCompressed();
+
 	this->inertia = this->positions;
 	this->optimizeD();
 }
@@ -132,9 +127,7 @@ void MassSpringADMM::computeLaplacianTerm()
 		}
 	}
 	this->weightedLaplacianTerm.makeCompressed();
-	int nnz = this->weightedLaplacianTerm.nonZeros();
 	Eigen::SparseMatrix<double> Amat = this->massMatrix + this->dt * this->dt * this->weightedLaplacianTerm;
-	int nnz1 = Amat.nonZeros();
 	this->lltSolver.compute(Amat);
 }
 
@@ -155,36 +148,23 @@ void MassSpringADMM::calculateForces()
 
 void MassSpringADMM::integrate()
 {
-	this->oldPos = Eigen::VectorXd(this->positions);
-	double prevEnergy = this->calculateEnergy();
-	double energy;
-	this->inertia = this->positions + this->dt * this->velocity;
-	if(this->isPinVertex)
-		this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 	for (size_t i = 0; i < this->numADMMIterations; i++)
 	{
+		this->oldPos = Eigen::VectorXd(this->positions);
+		this->inertia = this->positions + this->dt * this->velocity;
+		if(this->isPinVertex)
+			this->inertia.segment<3>(this->pinnedVertex * 3) = this->positions.segment<3>(this->pinnedVertex * 3);
 		this->optimizeD();
-		this->optimizeX();
-		energy = this->calculateEnergy();
-		double diff = std::abs(prevEnergy - energy);
-		if (diff < 1e-10)
-		{
-			std::cout << "\nConverged in " << i << " iterations" << std::endl;
-			break;
-		}
-		if(i==this->numADMMIterations - 1)
-			std::cout << "Energy resisual at end of step:" << diff << std::endl;
-		prevEnergy = energy;
+		this->optimizeX();		
+		if (this->isPinVertex)
+			this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
+		this->velocity = (this->positions - this->oldPos) / this->dt;
+		if (this->isPinVertex)
+			this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
+		this->handleCollisions();
 	}
-	if (this->isPinVertex)
-		this->positions.segment<3>(this->pinnedVertex * 3) = this->oldPos.segment<3>(this->pinnedVertex * 3);
-	this->velocity = (this->positions - this->oldPos) / this->dt;
-	if (this->isPinVertex)
-		this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
-	this->handleCollisions();
 	this->velocity *= 0.99;
 	this->tetMesh->isDirty = true;
-
 }
 
 void MassSpringADMM::optimizeD()
@@ -203,10 +183,8 @@ void MassSpringADMM::optimizeD()
 
 void MassSpringADMM::optimizeX()
 {
-
 	this->b = this->dt * this->dt * this->J * this->D + this->massMatrix * this->inertia + this->force * this->dt * this->dt;	
-	this->positions = this->lltSolver.solve(this->b);
-	
+	this->positions = this->lltSolver.solve(this->b);	
 }
 
 

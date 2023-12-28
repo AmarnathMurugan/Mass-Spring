@@ -57,12 +57,6 @@ private:
 		}
 	}scene;
 
-	//PhysicsSettings physicsSettings;
-
-	//KeyboardState keyboardState;
-
-	//MouseState mouseState;
-
 	EngineState engineState;
 
 };

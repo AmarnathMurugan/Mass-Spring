@@ -30,11 +30,10 @@ private:
 	std::vector<double> restLengths;
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
-	double dt = 1.0 / 60.0;
-	double springStiffness = 40000;
+	double dt = 1.0 / 30.0;
+	double springStiffness = 20000;
 	double damping = 0.0f;
 	double perVertexMass = 1;
-	double collisionPenalty = 5000000.0;
 	int pinnedVertex = 100;
 	bool isPinVertex = true;
 	bool isSimulate = false;
@@ -45,5 +44,5 @@ private:
 	Eigen::SparseMatrix<double> massMatrix, weightedLaplacianTerm, J;
 
 	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> lltSolver;
-	int numADMMIterations = 20;
+	int numADMMIterations = 10;
 };
