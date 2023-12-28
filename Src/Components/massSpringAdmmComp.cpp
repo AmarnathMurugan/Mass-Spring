@@ -161,9 +161,9 @@ void MassSpringADMM::integrate()
 		this->velocity = (this->positions - this->oldPos) / this->dt;
 		if (this->isPinVertex)
 			this->velocity.segment<3>(this->pinnedVertex * 3).setZero();
-		this->handleCollisions();
 	}
-	this->velocity *= 0.99;
+	this->handleCollisions();
+	//this->velocity *= 0.99;
 	this->tetMesh->isDirty = true;
 }
 
