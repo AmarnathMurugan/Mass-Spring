@@ -3,8 +3,8 @@
 TetMesh::TetMesh(const TetMesh& other)
 {
 	this->tetData = other.tetData;
-	this->isDirty = other.isDirty;
 	setBuffers();
+	this->isDirty = true;
 }
 
 void TetMesh::normalizeModel()

@@ -52,12 +52,17 @@ void MassSpring::update(const EngineState& engineState)
 	if (engineState.keyboard->released.contains(GLFW_KEY_SPACE))
 	{
 		this->isPinVertex = false;
-		//std::cout << "\nPin Vertex: " << this->isPinVertex << std::endl;
+	}
+	if (engineState.keyboard->released.contains(GLFW_KEY_ENTER))
+	{
+		this->isSimulate = true;
 	}
 }
 
 void MassSpring::fixedUpdate(const EngineState& engineState)
 {
+	if(!this->isSimulate)
+			return;
 	CustomUtils::Stopwatch sw("MassSpring::fixedUpdate");
 	dt = engineState.physics->fixedDeltaTime;
 	this->calculateForces();
