@@ -109,12 +109,11 @@ void MassSpring::calculateForces()
 void MassSpring::handleCollisions()
 {
 	float restitution = 0.99;
-#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < positions.size() / 3; i++)
 	{
 		if (this->positions(3 * i + 1) <= 0.0)
 		{
-			//this->force(3 * i + 1) += this->collisionPenalty * std::abs(this->positions(3 * i + 1)) * dt * dt;
 			this->positions(3 * i + 1) = std::abs(this->positions(3 * i + 1)) * restitution;
 			this->velocity.segment<3>(3 * i) *= -restitution;
 		}
@@ -238,14 +237,14 @@ void MassSpring::integrate()
 	}
 	if (cgSolver)
 	{
-		solver.setMaxIterations(20);
+		//solver.setTolerance(1e-3);
 		CustomUtils::Stopwatch sw("cg solve");
 		solver.compute(A);
 		this->velocity = solver.solveWithGuess(b, this->velocity);
 	}
 	else
 	{
-		//CustomUtils::Stopwatch sw("ldlt solve");
+		CustomUtils::Stopwatch sw("ldlt solve");
 		ldlt_solver.compute(A);
 		this->velocity = ldlt_solver.solve(b);		
 	}

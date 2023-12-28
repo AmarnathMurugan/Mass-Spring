@@ -32,7 +32,7 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt;
-	double springStiffness = 5000;
+	double springStiffness = 30000;
 	double damping = 0.0f;
 	double perVertexMass = 1.0;
 	int pinnedVertex = 100;

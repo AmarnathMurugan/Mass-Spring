@@ -20,7 +20,6 @@ public:
 	void optimizeX();
 	void computeLaplacianTerm();
 	void handleCollisions();
-	double calculateEnergy();
 
 private:
 	std::shared_ptr<TetMesh> tetMesh;
@@ -31,9 +30,10 @@ private:
 
 	Eigen::Vector3d gravity = Eigen::Vector3d(0.0, -9.8, 0.0);
 	double dt = 1.0 / 30.0;
-	double springStiffness = 50000;
+	double springStiffness = 60000;
 	double damping = 0.0f;
 	double perVertexMass = 1;
+	double collisionPenalty = 5000000.0;
 	int pinnedVertex = 100;
 	bool isPinVertex = true;
 	bool isSimulate = false;
@@ -44,5 +44,5 @@ private:
 	Eigen::SparseMatrix<double> massMatrix, weightedLaplacianTerm, J;
 
 	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> lltSolver;
-	int numADMMIterations = 10;
+	int numADMMIterations = 20;
 };
