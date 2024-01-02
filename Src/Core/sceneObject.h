@@ -9,7 +9,7 @@ public:
 	SceneObject() : transform(Transform::Identity()), name("sceneObject") {}
     virtual void render() {}
     virtual void addComponent(std::shared_ptr<Component> component);
-    void start();
+    void start(const EngineState& engineState);
     virtual void update(const EngineState& engineState);
     void fixedUpdate(const EngineState& engineState);
     Eigen::Matrix4f getModelMatrix();

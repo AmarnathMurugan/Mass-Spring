@@ -86,7 +86,7 @@ void Engine::start()
 	{
 		if (!this->scene.sceneObjects[i]->isActive)
 			continue;
-		this->scene.sceneObjects[i]->start();
+		this->scene.sceneObjects[i]->start(this->engineState);
 	}
 	glfwGetCursorPos(this->window, &this->engineState.mouse->prevPos.x(), &this->engineState.mouse->prevPos.y());
 	this->engineState.mouse->curPos = this->engineState.mouse->prevPos;

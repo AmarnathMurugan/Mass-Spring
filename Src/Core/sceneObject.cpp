@@ -6,11 +6,11 @@ void SceneObject::addComponent(std::shared_ptr<Component> comp)
     components.emplace_back(comp);
 }
 
-void SceneObject::start()
+void SceneObject::start(const EngineState& engineState)
 {
     for (auto component : components)
     {
-        component->start();
+        component->start(engineState);
     }
 }
 

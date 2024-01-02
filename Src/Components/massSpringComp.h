@@ -9,7 +9,7 @@ class MassSpring : public Component
 {
 public:
 	MassSpring(std::shared_ptr<TetMesh> _tetMesh);
-	virtual void start() override;
+	virtual void start(const EngineState& engineState) override;
 	virtual void update(const EngineState& engineState) override;
 	virtual void fixedUpdate(const EngineState& engineState) override;
 
