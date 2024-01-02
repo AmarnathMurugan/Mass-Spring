@@ -34,6 +34,6 @@ public:
 	void generateBuffers();
 	void computeBoundingBox(bool normalizeModel = false);
 	void update(const EngineState& engineState);
-	virtual void render() override;
+	void render() override;
 	~TriangularMesh();
 };

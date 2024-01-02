@@ -9,9 +9,9 @@ class MassSpringADMM : public Component
 {
 public:
 	MassSpringADMM(std::shared_ptr<TetMesh> _tetMesh);
-	virtual void start(const EngineState& engineState) override;
-	virtual void update(const EngineState& engineState) override;
-	virtual void fixedUpdate(const EngineState& engineState) override;
+	void start(const EngineState& engineState) override;
+	void update(const EngineState& engineState) override;
+	void fixedUpdate(const EngineState& engineState) override;
 
 	void preComputeMatrices();
 	void calculateForces();

@@ -10,12 +10,12 @@ public:
 	TetMesh(const TetMesh& other);
 	void normalizeModel();
 	void setBuffers();
-	virtual void update(const EngineState& engineState) override;
+	void update(const EngineState& engineState) override;
 	void initNormals();
 	void computeNormals();
 	void initTetMesh(Eigen::Vector3d offset = Eigen::Vector3d::Zero());
 	void offsetVertices(const Eigen::Vector3d& offset);
-	virtual void render() override;
+	void render() override;
 
 public:
 	struct TetData
