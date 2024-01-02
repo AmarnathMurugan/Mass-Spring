@@ -1,7 +1,7 @@
 #pragma once
 
 #include "includes.h"
-#include "Component.h"
+#include "component.h"
 
 class SceneObject
 {

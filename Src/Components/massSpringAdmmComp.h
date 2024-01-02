@@ -2,7 +2,7 @@
 
 #include <Eigen/Sparse>
 #include "includes.h"
-#include "Component.h"
+#include "component.h"
 #include "tetMesh.h"
 
 class MassSpringADMM : public Component
