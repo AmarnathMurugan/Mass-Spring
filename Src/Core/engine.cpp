@@ -57,7 +57,7 @@ void Engine::initScene()
 	tetMeshADMM->initTetMesh(Eigen::Vector3d(1.0,3.,0.0));
 	this->scene.addSceneObject(tetMeshADMM, tetBlinnMat);
 	std::shared_ptr<MassSpringADMM> massSpring = std::make_shared<MassSpringADMM>(tetMeshADMM);	
-	tetMeshADMM->AddComponent(massSpring);
+	tetMeshADMM->addComponent(massSpring);
 
 	std::shared_ptr<TetMesh> tetMeshNewton = std::make_shared<TetMesh>(*tetMeshADMM);
 	tetMeshNewton->offsetVertices(Eigen::Vector3d(-2.0, 0.0, 0.0));
@@ -65,7 +65,7 @@ void Engine::initScene()
 	std::shared_ptr<BlinnPhongMaterial> tetBlinnMatNewton = std::make_shared<BlinnPhongMaterial>(blinnPhongShaderDobulePrecision, blinnPhongProperties);
 	this->scene.addSceneObject(tetMeshNewton, tetBlinnMatNewton);
 	std::shared_ptr<MassSpring> massSpringNewton = std::make_shared<MassSpring>(tetMeshNewton);
-	tetMeshNewton->AddComponent(massSpringNewton);
+	tetMeshNewton->addComponent(massSpringNewton);
 
 	
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
@@ -86,7 +86,7 @@ void Engine::start()
 	{
 		if (!this->scene.sceneObjects[i]->isActive)
 			continue;
-		this->scene.sceneObjects[i]->Start();
+		this->scene.sceneObjects[i]->start();
 	}
 	glfwGetCursorPos(this->window, &this->engineState.mouse->prevPos.x(), &this->engineState.mouse->prevPos.y());
 	this->engineState.mouse->curPos = this->engineState.mouse->prevPos;

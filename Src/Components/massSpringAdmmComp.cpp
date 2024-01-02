@@ -5,7 +5,7 @@ MassSpringADMM::MassSpringADMM(std::shared_ptr<TetMesh> _tetMesh) : positions(_t
 	tetMesh = _tetMesh;
 }
 
-void MassSpringADMM::Start()
+void MassSpringADMM::start()
 {
 	std::cout << "\nMassSpringADMM Start" << std::endl;
 	// Find all unique springs

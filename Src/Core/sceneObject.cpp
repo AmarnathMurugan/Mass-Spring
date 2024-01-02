@@ -1,16 +1,16 @@
 #include "sceneObject.h"
 
 
-void SceneObject::AddComponent(std::shared_ptr<Component> comp)
+void SceneObject::addComponent(std::shared_ptr<Component> comp)
 {
     components.emplace_back(comp);
 }
 
-void SceneObject::Start()
+void SceneObject::start()
 {
     for (auto component : components)
     {
-        component->Start();
+        component->start();
     }
 }
 
