@@ -2,7 +2,7 @@
 
 class SceneObject;
 
-class Component {
+class component {
  public:
   virtual void Start() = 0;
   virtual void update(const EngineState& engineState) = 0;

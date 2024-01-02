@@ -1,7 +1,7 @@
 #include "sceneObject.h"
 
 
-void SceneObject::AddComponent(std::shared_ptr<Component> comp)
+void SceneObject::AddComponent(std::shared_ptr<component> comp)
 {
     components.emplace_back(comp);
 }

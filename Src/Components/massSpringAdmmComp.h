@@ -5,7 +5,7 @@
 #include "Component.h"
 #include "tetMesh.h"
 
-class MassSpringADMM : public Component
+class MassSpringADMM : public component
 {
 public:
 	MassSpringADMM(std::shared_ptr<TetMesh> _tetMesh);
