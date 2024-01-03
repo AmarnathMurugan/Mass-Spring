@@ -11,14 +11,30 @@
 
 const float  PI_F = 3.14159265358979f;
 
-
-typedef Eigen::Transform<float, 3, Eigen::Affine> Transform;
 typedef Eigen::Matrix<float, Eigen::Dynamic, 3,Eigen::RowMajor> MatrixX3fRowMajor;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> MatrixX3dRowMajor;
 typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, 3, Eigen::RowMajor> MatrixX3UIRowMajor;
 typedef Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> MatrixX3IRowMajor;
 typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, 4, Eigen::RowMajor> MatrixX4UIRowMajor;
 typedef Eigen::Matrix<int, Eigen::Dynamic, 4, Eigen::RowMajor> MatrixX4IRowMajor;
+
+struct Transform
+{
+	Eigen::Vector3f position, rotation, scale;
+
+	Transform() : position(Eigen::Vector3f::Zero()), rotation(Eigen::Vector3f::Zero()), scale(Eigen::Vector3f::Ones()) {}
+
+	Eigen::Matrix4f matrix() const
+	{
+		Eigen::Transform<float, 3, Eigen::Affine> t = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+		t.translate(this->position);
+		t.rotate(Eigen::AngleAxisf(this->rotation.x(), Eigen::Vector3f::UnitX()));
+		t.rotate(Eigen::AngleAxisf(this->rotation.y(), Eigen::Vector3f::UnitY()));
+		t.rotate(Eigen::AngleAxisf(this->rotation.z(), Eigen::Vector3f::UnitZ()));
+		t.scale(this->scale);
+		return t.matrix();
+	};
+};
 
 struct RenderState
 {

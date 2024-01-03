@@ -4,18 +4,21 @@ Camera::Camera(Eigen::Vector3f lookAtPos,float _distance, float fov, float near,
 {
 	this->transform.matrix().setIdentity();
 	this->theta = this->phi = 0;
-	Eigen::Vector3f test = CustomUtils::spherePoint(this->phi, this->theta);
-	this->transform.translation() = this->lookAtPosition + CustomUtils::spherePoint(this->phi,this->theta) * this->distance;
+	this->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta,this->phi) * this->distance;
 	this->rotation = Eigen::Vector3f(this->theta,-this->phi,0.0f);
+	Eigen::Vector3f pos = this->transform.position;
+	auto test2 = CustomUtils::spherePoint(PI_F *-0.5f,0);
+	auto test1 = CustomUtils::spherePoint(PI_F*-0.25f,0);
+	auto test3 = CustomUtils::spherePoint(PI_F*0.25f,0);
+	auto test4 = CustomUtils::spherePoint(PI_F*0.5f,0);
 	this->isPerspective = true;
 }
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
-	Transform t = Transform::Identity();
-	return t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->transform.translation()).matrix();
-
-
+	//return this->transform.matrix().inverse();
+	auto t = Eigen::Transform<float,3,0>::Identity();
+	return t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->transform.position).matrix();
 }
 
 Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
@@ -55,15 +58,16 @@ void Camera::rotateCamera(const Eigen::Vector2d& delta)
 	float sensitivity = 0.005f;
 	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * sensitivity, -PI_F * 0.5f, PI_F * 0.5f);
 	this->phi = this->phi - delta.x() * sensitivity;
-	this->transform.translation() = this->lookAtPosition + CustomUtils::spherePoint(this->phi, this->theta) * this->distance;
+	this->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;
 	this->rotation = Eigen::Vector3f(this->theta, -this->phi, 0.0f);	
+	this->transform.rotation = Eigen::Vector3f(this->theta, this->phi, 0.0f);
 }
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
 {
 	float sensitivity = 0.004f;
 	const Eigen::Vector3f dir = Eigen::Vector3f(-delta.x(), delta.y(),0.0) * sensitivity / this->distance;
-	Transform t = Transform::Identity();
+	auto t = Eigen::Transform<float, 3, 0>::Identity();
 	const  Eigen::Matrix4f view =
 		t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->lookAtPosition).matrix();
 	this->lookAtPosition += view.block<3, 3>(0, 0).transpose() * dir;
@@ -72,10 +76,10 @@ void Camera::panCamera(const Eigen::Vector2d& delta)
 
 void Camera::zoom(float delta)
 {
-	Eigen::Vector3f dir = this->transform.translation() - lookAtPosition;
+	Eigen::Vector3f dir = this->transform.position - lookAtPosition;
 	distance += delta * 0.1;
 	distance = std::max(distance, 0.1f);
-	this->transform.translation() = lookAtPosition + dir.normalized() * distance;
+	this->transform.position = lookAtPosition + dir.normalized() * distance;
 }
 
 void Camera::switchProjectionType(bool isPerspective)

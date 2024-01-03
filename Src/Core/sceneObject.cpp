@@ -31,8 +31,3 @@ void SceneObject::fixedUpdate(const EngineState& engineState)
 			component->fixedUpdate(engineState);
 	}
 }
-
-Eigen::Matrix4f SceneObject::getModelMatrix()
-{
-    return transform.matrix();
-}

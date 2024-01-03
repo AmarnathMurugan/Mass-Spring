@@ -166,7 +166,7 @@ namespace CustomUtils
 		return std::abs(a - b) < eps;
 	};
 
-	static Eigen::Vector3f spherePoint(float phi, float theta)
+	static Eigen::Vector3f spherePoint(float theta, float phi)
 	{
 		return {
 			std::cos(theta) * std::sin(phi),

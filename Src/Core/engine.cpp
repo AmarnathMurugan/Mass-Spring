@@ -21,7 +21,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,1.2,0), 6 ,45);
+	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,0,0), 1 ,45);
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -74,7 +74,7 @@ void Engine::initScene()
 	std::shared_ptr<TriangularMesh> plane = std::make_shared<TriangularMesh>();
 	CustomUtils::importObjModel("resources/Models/plane.obj", false, plane->vertexData.position, plane->vertexData.normal, plane->faceIndices, plane->vertAdjacency);
 	plane->generateBuffers();
-	plane->transform.scale(Eigen::Vector3f(3, 3, 3));
+	plane->transform.scale = Eigen::Vector3f(3, 3, 3);
 	this->scene.addSceneObject(plane, planeMat);
 	this->engineState.renderState = std::make_shared<RenderState>(scene.renderState);
 }
@@ -160,22 +160,22 @@ void Engine::handleInteractions(int key, bool isDown)
 {
 	switch (key)
 	{
-	case GLFW_KEY_ESCAPE:
-		if (!isDown)
-			glfwSetWindowShouldClose(this->window, GLFW_TRUE);
-		break;
-	case GLFW_KEY_P:
-		if (!isDown) break;
-		this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
-		break;
-	case GLFW_KEY_LEFT_CONTROL:
-		break;
+		case GLFW_KEY_ESCAPE:
+			if (!isDown)
+				glfwSetWindowShouldClose(this->window, GLFW_TRUE);
+			break;
+		case GLFW_KEY_P:
+			if (!isDown) break;
+			this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
+			break;
+		case GLFW_KEY_LEFT_CONTROL:
+			break;
 	}
 
 	switch (key)
 	{
-	case GLFW_MOUSE_BUTTON_LEFT:
-		break;
+		case GLFW_MOUSE_BUTTON_LEFT:
+			break;
 	}
 
 }
@@ -242,7 +242,7 @@ void Engine::update()
 			if (!sceneObj->isRenderable)
 				continue;
 			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
-			Eigen::Matrix4f modelMatrix = sceneObj->getModelMatrix();
+			Eigen::Matrix4f modelMatrix = sceneObj->transform.matrix();
 			Eigen::Matrix4f MV = this->scene.renderState.viewMatrix * modelMatrix;
 			Eigen::Matrix4f MVP = VP * modelMatrix;
 			Eigen::Matrix3f normalMatrix = MV.block<3, 3>(0, 0).inverse().transpose();
