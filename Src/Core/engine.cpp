@@ -152,7 +152,7 @@ void Engine::handleEvent(const GLEQevent& event)
 		}
 		break;
 	case GLEQ_SCROLLED:
-		//this->scene.cam->zoom(-event.scroll.y * 1.5f);
+		this->engineState.mouse->scroll = event.scroll.y;
 		break;
 	}
 }
@@ -257,6 +257,7 @@ void Engine::update()
 	}
 
 	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
+	this->engineState.mouse->scroll = 0.0f;
 }
 
 void Engine::stop()

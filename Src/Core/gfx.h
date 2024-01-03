@@ -59,6 +59,7 @@ struct MouseState
 	bool isLeftDown = false;
 	bool isRightDown = false;
 	bool isMiddleDown = false;
+	float scroll = 0.0f;
 	Eigen::Vector2d prevPos, curPos, deltaPos;
 };
 
