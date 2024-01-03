@@ -10,12 +10,6 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, 0);
-
-	this->engineState.keyboard = std::make_shared<KeyboardState>();
-	this->engineState.mouse = std::make_shared<MouseState>();
-	this->engineState.physics = std::make_shared<PhysicsSettings>();
-
-
 	this->initScene();
 }
 
@@ -77,7 +71,7 @@ void Engine::initScene()
 	plane->generateBuffers();
 	plane->transform.scale = Eigen::Vector3f(3, 3, 3);
 	this->scene.addSceneObject(plane, planeMat);
-	this->engineState.renderState = std::make_shared<RenderState>(scene.renderState);
+	this->engineState.renderState = scene.renderState;
 }
 
 
@@ -89,16 +83,16 @@ void Engine::start()
 			continue;
 		this->scene.sceneObjects[i]->start(this->engineState);
 	}
-	glfwGetCursorPos(this->window, &this->engineState.mouse->prevPos.x(), &this->engineState.mouse->prevPos.y());
-	this->engineState.mouse->curPos = this->engineState.mouse->prevPos;
-	this->engineState.physics->start = std::chrono::high_resolution_clock::now();
+	glfwGetCursorPos(this->window, &this->engineState.mouse.prevPos.x(), &this->engineState.mouse.prevPos.y());
+	this->engineState.mouse.curPos = this->engineState.mouse.prevPos;
+	this->engineState.physics.start = std::chrono::high_resolution_clock::now();
 	this->engineState.start = std::chrono::high_resolution_clock::now();
 }
 
 void Engine::handleEvent(const GLEQevent& event)
 {
-	this->engineState.keyboard->down.clear();
-	this->engineState.keyboard->released.clear();
+	this->engineState.keyboard.down.clear();
+	this->engineState.keyboard.released.clear();
 
 	switch (event.type)
 	{
@@ -108,17 +102,17 @@ void Engine::handleEvent(const GLEQevent& event)
 		glViewport(0, 0, this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
 		break;
 	case GLEQ_KEY_PRESSED:
-		this->engineState.keyboard->down.insert(event.keyboard.key);
-		this->engineState.keyboard->held.insert(event.keyboard.key);
-		this->engineState.keyboard->down.insert(event.keyboard.mods);
-		this->engineState.keyboard->held.insert(event.keyboard.mods);
+		this->engineState.keyboard.down.insert(event.keyboard.key);
+		this->engineState.keyboard.held.insert(event.keyboard.key);
+		this->engineState.keyboard.down.insert(event.keyboard.mods);
+		this->engineState.keyboard.held.insert(event.keyboard.mods);
 		this->handleInteractions(event.keyboard.key, true);
 		break;
 	case GLEQ_KEY_RELEASED:
-		this->engineState.keyboard->held.erase(event.keyboard.key);
-		this->engineState.keyboard->released.insert(event.keyboard.key);
-		this->engineState.keyboard->held.erase(event.keyboard.mods);
-		this->engineState.keyboard->released.insert(event.keyboard.mods);
+		this->engineState.keyboard.held.erase(event.keyboard.key);
+		this->engineState.keyboard.released.insert(event.keyboard.key);
+		this->engineState.keyboard.held.erase(event.keyboard.mods);
+		this->engineState.keyboard.released.insert(event.keyboard.mods);
 		this->handleInteractions(event.keyboard.key, false);
 		break;
 	case GLEQ_BUTTON_PRESSED:
@@ -126,13 +120,13 @@ void Engine::handleEvent(const GLEQevent& event)
 		switch (event.mouse.button)
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
-			this->engineState.mouse->isLeftDown = true;
+			this->engineState.mouse.isLeftDown = true;
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
-			this->engineState.mouse->isRightDown = true;
+			this->engineState.mouse.isRightDown = true;
 			break;
 		case GLFW_MOUSE_BUTTON_MIDDLE:
-			this->engineState.mouse->isMiddleDown = true;
+			this->engineState.mouse.isMiddleDown = true;
 			break;
 		}
 		break;
@@ -141,18 +135,18 @@ void Engine::handleEvent(const GLEQevent& event)
 		switch (event.mouse.button)
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
-			this->engineState.mouse->isLeftDown = false;
+			this->engineState.mouse.isLeftDown = false;
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
-			this->engineState.mouse->isRightDown = false;
+			this->engineState.mouse.isRightDown = false;
 			break;
 		case GLFW_MOUSE_BUTTON_MIDDLE:
-			this->engineState.mouse->isMiddleDown = false;
+			this->engineState.mouse.isMiddleDown = false;
 			break;
 		}
 		break;
 	case GLEQ_SCROLLED:
-		this->engineState.mouse->scroll = event.scroll.y;
+		this->engineState.mouse.scroll = event.scroll.y;
 		break;
 	}
 }
@@ -188,9 +182,9 @@ void Engine::handleInteractions()
 void Engine::update()
 {
 	this->engineState.deltaTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - this->engineState.prevTime).count();
-	this->engineState.mouse->prevPos = this->engineState.mouse->curPos;
-	glfwGetCursorPos(this->window, &this->engineState.mouse->curPos.x(), &this->engineState.mouse->curPos.y());
-	this->engineState.mouse->deltaPos = this->engineState.mouse->curPos - this->engineState.mouse->prevPos;
+	this->engineState.mouse.prevPos = this->engineState.mouse.curPos;
+	glfwGetCursorPos(this->window, &this->engineState.mouse.curPos.x(), &this->engineState.mouse.curPos.y());
+	this->engineState.mouse.deltaPos = this->engineState.mouse.curPos - this->engineState.mouse.prevPos;
 
 	this->handleInteractions();
 	this->scene.cam->update(this->engineState);
@@ -244,8 +238,8 @@ void Engine::update()
 
 
 	// Update physics
-	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics->start;
-	if (elapsed.count() > this->engineState.physics->fixedDeltaTime)
+	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
+	if (elapsed.count() > this->engineState.physics.fixedDeltaTime)
 	{
 		for (auto& sceneObj : this->scene.sceneObjects)
 		{
@@ -253,11 +247,11 @@ void Engine::update()
 				continue;
 			sceneObj->fixedUpdate(this->engineState);
 		}
-		this->engineState.physics->start = std::chrono::high_resolution_clock::now();
+		this->engineState.physics.start = std::chrono::high_resolution_clock::now();
 	}
 
 	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
-	this->engineState.mouse->scroll = 0.0f;
+	this->engineState.mouse.scroll = 0.0f;
 }
 
 void Engine::stop()

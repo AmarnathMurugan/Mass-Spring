@@ -9,21 +9,21 @@ void ArcBall::start(const EngineState& engineState)
 void ArcBall::update(const EngineState& engineState)
 {
 	if(this->isZoom)
-		this->zoom(engineState.mouse->scroll * -5);
+		this->zoom(engineState.mouse.scroll * -5);
 
-	bool isAltPressed = (engineState.keyboard->held.find(GLFW_KEY_LEFT_ALT) != engineState.keyboard->held.end()) ||
-		(engineState.keyboard->held.find(GLFW_KEY_RIGHT_ALT) != engineState.keyboard->held.end());
+	bool isAltPressed = (engineState.keyboard.held.find(GLFW_KEY_LEFT_ALT) != engineState.keyboard.held.end()) ||
+		(engineState.keyboard.held.find(GLFW_KEY_RIGHT_ALT) != engineState.keyboard.held.end());
 	
 	if(!isAltPressed) 	
 		return;
-	if (engineState.mouse->isLeftDown)
-		this->rotate(engineState.mouse->deltaPos);
+	if (engineState.mouse.isLeftDown)
+		this->rotate(engineState.mouse.deltaPos);
 
-	if (engineState.mouse->isRightDown && this->isZoom)
-		this->zoom(engineState.mouse->deltaPos.y());
+	if (engineState.mouse.isRightDown && this->isZoom)
+		this->zoom(engineState.mouse.deltaPos.y());
 
-	if (engineState.mouse->isMiddleDown && this->isPan)
-		this->pan(engineState.mouse->deltaPos);
+	if (engineState.mouse.isMiddleDown && this->isPan)
+		this->pan(engineState.mouse.deltaPos);
 }
 
 void ArcBall::rotate(const Eigen::Vector2d& delta)

@@ -71,10 +71,10 @@ struct PhysicsSettings
 
 struct EngineState
 {
-	std::shared_ptr<KeyboardState> keyboard;
-	std::shared_ptr<MouseState> mouse;
-	std::shared_ptr<PhysicsSettings> physics;
-	std::shared_ptr<RenderState> renderState;
+	KeyboardState keyboard;
+	MouseState mouse;
+	PhysicsSettings physics;
+	RenderState renderState;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	std::chrono::time_point<std::chrono::high_resolution_clock> prevTime;
 	double deltaTime;
