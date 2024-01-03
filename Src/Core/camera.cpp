@@ -60,7 +60,7 @@ void Camera::rotateCamera(const Eigen::Vector2d& delta)
 	this->phi = this->phi - delta.x() * sensitivity;
 	this->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;
 	this->rotation = Eigen::Vector3f(this->theta, -this->phi, 0.0f);	
-	this->transform.rotation = Eigen::Vector3f(this->theta, this->phi, 0.0f);
+	//this->transform.rotation = Eigen::Vector3f(-this->theta, this->phi, 0.0f);
 }
 
 void Camera::panCamera(const Eigen::Vector2d& delta)

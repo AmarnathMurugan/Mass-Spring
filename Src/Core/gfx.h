@@ -20,20 +20,18 @@ typedef Eigen::Matrix<int, Eigen::Dynamic, 4, Eigen::RowMajor> MatrixX4IRowMajor
 
 struct Transform
 {
-	Eigen::Vector3f position, rotation, scale;
-
-	Transform() : position(Eigen::Vector3f::Zero()), rotation(Eigen::Vector3f::Zero()), scale(Eigen::Vector3f::Ones()) {}
+	Eigen::Vector3f position, scale;
+	Eigen::Quaternionf rotation;
+	Transform() : position(Eigen::Vector3f::Zero()), scale(Eigen::Vector3f::Ones()), rotation(Eigen::Quaternionf::Identity()) {}
 
 	Eigen::Matrix4f matrix() const
 	{
-		Eigen::Transform<float, 3, Eigen::Affine> t = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
-		t.translate(this->position);
-		t.rotate(Eigen::AngleAxisf(this->rotation.x(), Eigen::Vector3f::UnitX()));
-		t.rotate(Eigen::AngleAxisf(this->rotation.y(), Eigen::Vector3f::UnitY()));
-		t.rotate(Eigen::AngleAxisf(this->rotation.z(), Eigen::Vector3f::UnitZ()));
-		t.scale(this->scale);
-		return t.matrix();
-	};
+		Eigen::Matrix4f mat = Eigen::Matrix4f::Identity();
+		mat.block<3, 3>(0, 0) = rotation.toRotationMatrix();
+		mat.block<3, 1>(0, 3) = position;
+		mat.block<3, 3>(0, 0) *= scale.asDiagonal();
+		return mat;
+	}	
 };
 
 struct RenderState
