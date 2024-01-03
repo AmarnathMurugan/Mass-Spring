@@ -16,7 +16,7 @@ Camera::Camera(Eigen::Vector3f lookAtPos,float _distance, float fov, float near,
 
 Eigen::Matrix4f Camera::viewMatrix() const
 {
-	//return this->transform.matrix().inverse();
+	return this->transform.matrix().inverse();
 	auto t = Eigen::Transform<float,3,0>::Identity();
 	return t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->transform.position).matrix();
 }
@@ -56,20 +56,26 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 void Camera::rotateCamera(const Eigen::Vector2d& delta)
 {
 	float sensitivity = 0.005f;
-	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * sensitivity, -PI_F * 0.5f, PI_F * 0.5f);
+	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * sensitivity, -PI_F * 0.499f, PI_F * 0.499f);
 	this->phi = this->phi - delta.x() * sensitivity;
 	this->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;
 	this->rotation = Eigen::Vector3f(this->theta, -this->phi, 0.0f);	
-	//this->transform.rotation = Eigen::Vector3f(-this->theta, this->phi, 0.0f);
+	// compute look at rotation for camera
+	Eigen::Vector3f dir = (this->lookAtPosition - this->transform.position).normalized();
+	Eigen::Vector3f up = Eigen::Vector3f(0, 1, 0);
+	Eigen::Vector3f right = dir.cross(up).normalized();
+	Eigen::Vector3f correctedUp = right.cross(dir).normalized();
+	Eigen::Matrix3f lookAtRotation;
+	lookAtRotation << right, correctedUp, -dir;
+	this->transform.rotation = Eigen::Quaternionf(lookAtRotation);
+
 }
 
 void Camera::panCamera(const Eigen::Vector2d& delta)
 {
-	float sensitivity = 0.004f;
+	float sensitivity = 0.04f;
 	const Eigen::Vector3f dir = Eigen::Vector3f(-delta.x(), delta.y(),0.0) * sensitivity / this->distance;
-	auto t = Eigen::Transform<float, 3, 0>::Identity();
-	const  Eigen::Matrix4f view =
-		t.rotate(CustomUtils::eulerToQuaternion(this->rotation)).translate(-this->lookAtPosition).matrix();
+	const  Eigen::Matrix4f view = this->viewMatrix();
 	this->lookAtPosition += view.block<3, 3>(0, 0).transpose() * dir;
 	rotateCamera(Eigen::Vector2d(0,0));
 }
