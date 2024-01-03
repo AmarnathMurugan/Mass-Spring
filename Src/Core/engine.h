@@ -8,6 +8,7 @@
 #include "blinnPhongMaterial.h"
 #include "massSpringComp.h"
 #include "massSpringAdmmComp.h"
+#include "arcBallComp.h"
 
 
 class Engine

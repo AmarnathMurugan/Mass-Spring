@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="Src\Components\massSpringAdmmComp.h" />
     <ClInclude Include="Src\Components\massSpringComp.h" />
+    <ClInclude Include="Src\Components\arcBallComp.h" />
     <ClInclude Include="Src\Core\camera.h" />
     <ClInclude Include="Src\Core\component.h" />
     <ClInclude Include="Src\Core\customUtils.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="Src\Materials\unlitMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Components\arcBallComp.cpp" />
     <ClCompile Include="Src\Components\massSpringAdmmComp.cpp" />
     <ClCompile Include="Src\Components\massSpringComp.cpp" />
     <ClCompile Include="Src\Core\camera.cpp" />

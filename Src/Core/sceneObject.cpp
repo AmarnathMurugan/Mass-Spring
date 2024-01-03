@@ -3,6 +3,7 @@
 
 void SceneObject::addComponent(std::shared_ptr<Component> comp)
 {
+    comp->sceneObject = shared_from_this();
     components.emplace_back(comp);
 }
 

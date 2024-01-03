@@ -3,7 +3,7 @@
 #include "includes.h"
 #include "component.h"
 
-class SceneObject
+class SceneObject : public std::enable_shared_from_this<SceneObject>
 {
 public:	
 	SceneObject() : name("sceneObject") {}

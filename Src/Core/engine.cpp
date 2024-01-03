@@ -21,7 +21,8 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
-	this->scene.cam = std::make_shared<Camera>(Eigen::Vector3f(0,0,0), 1 ,45);
+	this->scene.cam = std::make_shared<Camera>();
+	this->scene.cam->addComponent(std::make_shared<ArcBall>());
 
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -151,7 +152,7 @@ void Engine::handleEvent(const GLEQevent& event)
 		}
 		break;
 	case GLEQ_SCROLLED:
-		this->scene.cam->zoom(-event.scroll.y * 1.5f);
+		//this->scene.cam->zoom(-event.scroll.y * 1.5f);
 		break;
 	}
 }
@@ -182,20 +183,6 @@ void Engine::handleInteractions(int key, bool isDown)
 
 void Engine::handleInteractions()
 {
-	bool isCtrlPressed = (this->engineState.keyboard->held.find(GLFW_KEY_LEFT_CONTROL) != this->engineState.keyboard->held.end()) ||
-		(this->engineState.keyboard->held.find(GLFW_KEY_RIGHT_CONTROL) != this->engineState.keyboard->held.end());
-
-	bool isAltPressed = (this->engineState.keyboard->held.find(GLFW_KEY_LEFT_ALT) != this->engineState.keyboard->held.end()) ||
-		(this->engineState.keyboard->held.find(GLFW_KEY_RIGHT_ALT) != this->engineState.keyboard->held.end());
-
-	if (isAltPressed && this->engineState.mouse->isLeftDown)
-		this->scene.cam->rotateCamera(this->engineState.mouse->deltaPos);
-
-	if (isAltPressed && this->engineState.mouse->isRightDown)
-		this->scene.cam->zoom(this->engineState.mouse->deltaPos.y() * 0.2);
-
-	if (isAltPressed && this->engineState.mouse->isMiddleDown)
-		this->scene.cam->panCamera(this->engineState.mouse->deltaPos);
 }
 
 void Engine::update()
@@ -206,6 +193,7 @@ void Engine::update()
 	this->engineState.mouse->deltaPos = this->engineState.mouse->curPos - this->engineState.mouse->prevPos;
 
 	this->handleInteractions();
+	this->scene.cam->update(this->engineState);
 
 	// Set global render state parameters
 	this->scene.renderState.viewMatrix = this->scene.cam->viewMatrix();
