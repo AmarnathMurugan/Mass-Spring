@@ -159,7 +159,7 @@
     <ClInclude Include="Src\Components\massSpringComp.h" />
     <ClInclude Include="Src\Components\arcBallComp.h" />
     <ClInclude Include="Src\Core\camera.h" />
-    <ClInclude Include="Src\Core\component.h" />
+    <ClInclude Include="Src\Components\component.h" />
     <ClInclude Include="Src\Core\customUtils.h" />
     <ClInclude Include="Src\Core\engine.h" />
     <ClInclude Include="Src\Core\gfx.h" />
@@ -167,6 +167,7 @@
     <ClInclude Include="Src\Core\material.h" />
     <ClInclude Include="Src\Core\sceneObject.h" />
     <ClInclude Include="Src\Core\shader.h" />
+    <ClInclude Include="Src\Core\skybox.h" />
     <ClInclude Include="Src\Core\tetMesh.h" />
     <ClInclude Include="Src\Core\tet_mesh_boundary.h" />
     <ClInclude Include="Src\Core\triangularMesh.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Src\Headers\Custom\custom_utils.h" />
     <ClInclude Include="Src\Headers\Custom\sceneObject.h" />
     <ClInclude Include="Src\Materials\blinnPhongMaterial.h" />
+    <ClInclude Include="Src\Materials\skyboxMaterial.h" />
     <ClInclude Include="Src\Materials\unlitMaterial.h" />
   </ItemGroup>
   <ItemGroup>
@@ -201,11 +203,13 @@
     <ClCompile Include="Src\Core\material.cpp" />
     <ClCompile Include="Src\Core\sceneObject.cpp" />
     <ClCompile Include="Src\Core\shader.cpp" />
+    <ClCompile Include="Src\Core\skybox.cpp" />
     <ClCompile Include="Src\Core\tetMesh.cpp" />
     <ClCompile Include="Src\Core\tet_mesh_boundary.cpp" />
     <ClCompile Include="Src\Core\triangularMesh.cpp" />
     <ClCompile Include="Src\Deps\glad\glad.c" />
     <ClCompile Include="Src\Materials\blinnPhongMaterial.cpp" />
+    <ClCompile Include="Src\Materials\skyboxMaterial.cpp" />
     <ClCompile Include="Src\Materials\unlitMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>

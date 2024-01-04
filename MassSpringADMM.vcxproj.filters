@@ -48,7 +48,7 @@
     <ClInclude Include="Src\Core\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\component.h">
+    <ClInclude Include="Src\Components\component.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\customUtils.h">
@@ -117,6 +117,12 @@
     <ClInclude Include="Src\Components\arcBallComp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Materials\skyboxMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Core\camera.cpp">
@@ -165,6 +171,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Components\arcBallComp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Materials\skyboxMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

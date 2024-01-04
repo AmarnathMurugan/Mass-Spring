@@ -14,8 +14,9 @@ void ArcBall::update(const EngineState& engineState)
 	bool isAltPressed = (engineState.keyboard.held.find(GLFW_KEY_LEFT_ALT) != engineState.keyboard.held.end()) ||
 		(engineState.keyboard.held.find(GLFW_KEY_RIGHT_ALT) != engineState.keyboard.held.end());
 	
-	if(!isAltPressed) 	
+	if(!isAltPressed)
 		return;
+
 	if (engineState.mouse.isLeftDown)
 		this->rotate(engineState.mouse.deltaPos);
 
@@ -28,6 +29,7 @@ void ArcBall::update(const EngineState& engineState)
 
 void ArcBall::rotate(const Eigen::Vector2d& delta)
 {	
+	// theta is clamped to +/- 89.99 degs avoid singularity at poles
 	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * this->rotationSpeed, -PI_F * 0.499f, PI_F * 0.499f);
 	this->phi = this->phi - delta.x() * this->rotationSpeed;
 	this->sceneObject->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;

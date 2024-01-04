@@ -1,11 +1,16 @@
 #pragma once
 #include "includes.h"
 #include "gleq.h"
+// Scene Objects
 #include "camera.h"
 #include "triangularMesh.h"
 #include "tetMesh.h"
+#include "skybox.h"
+// Materials
 #include "unlitMaterial.h"
 #include "blinnPhongMaterial.h"
+#include "skyboxMaterial.h"
+// Components
 #include "massSpringComp.h"
 #include "massSpringAdmmComp.h"
 #include "arcBallComp.h"
@@ -33,6 +38,8 @@ private:
 		std::unordered_map<std::shared_ptr<SceneObject>, std::shared_ptr<Material>> sceneObjectMaterialMapping;
 		std::unordered_map<std::shared_ptr<Shader>,std::unordered_set<std::shared_ptr<SceneObject>>> shaderSceneObjectMapping;
 		std::shared_ptr<Camera> cam;
+		std::shared_ptr<Skybox> skybox;
+		std::shared_ptr<SkyboxMaterial> skyboxMaterial;
 		RenderState renderState;
 
 		void addSceneObject(std::shared_ptr<SceneObject> sceneObj, std::shared_ptr<Material> material = nullptr)

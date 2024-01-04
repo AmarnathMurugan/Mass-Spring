@@ -15,9 +15,22 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 
 void Engine::initScene()
 {
+	// Create camera with arcball component
 	this->scene.cam = std::make_shared<Camera>();
 	this->scene.cam->addComponent(std::make_shared<ArcBall>());
 
+	// Create Skybox
+	this->scene.skybox = std::make_shared<Skybox>();
+	std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>(
+		std::unordered_map<ShaderType, std::string>
+	{
+		{ShaderType::VertexShader, "resources/Shaders/Skybox/skybox.vert"},
+		{ ShaderType::FragmentShader,"resources/Shaders/Skybox/skybox.frag" }
+	});
+	this->scene.skyboxMaterial = std::make_shared<SkyboxMaterial>(skyboxShader,Eigen::Vector3f(1,0,0));
+
+	
+	// Create Scene Objects and Materials
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
 	{
@@ -221,6 +234,8 @@ void Engine::update()
 			if (!sceneObj->isActive)
 				continue;
 			sceneObj->update(this->engineState);
+
+			// If the object is renderable, set all the matrices and render
 			if (!sceneObj->isRenderable)
 				continue;
 			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
@@ -234,7 +249,12 @@ void Engine::update()
 			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uNormalMatrix", normalMatrix);
 			sceneObj->render();
 		}
+
 	}
+
+	// Render Skybox
+	this->scene.skyboxMaterial->use();
+	this->scene.skybox->render();
 
 
 	// Update physics
