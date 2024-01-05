@@ -36,7 +36,6 @@ struct Transform
 
 struct RenderState
 {
-	Eigen::Matrix4f viewMatrix,projectionMatrix;
 	Eigen::Vector3f cameraPosition;
 	Eigen::Vector3f ambientColor = Eigen::Vector3f(1,1,1);
 	Eigen::Vector3f clearColor = Eigen::Vector3f(180,230,225)/225.0;
@@ -47,6 +46,26 @@ struct RenderState
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
 	float lightIntensity = 1.0f;
 
+	GLuint matrixUBO = GL_INVALID_INDEX;
+	GLuint lightUBO = GL_INVALID_INDEX;
+
+	struct alignas(16) Matices
+	{
+		Eigen::Matrix4f viewMatrix, projectionMatrix, VP;
+	};
+
+	void initializeUBOs()
+	{
+		glGenBuffers(1, &this->matrixUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, this->matrixUBO);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(Eigen::Matrix4f) * 2, nullptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		glGenBuffers(1, &this->lightUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, this->lightUBO);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(Eigen::Vector3f) * 3 + sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 };
 
 struct KeyboardState
