@@ -64,9 +64,7 @@ struct RenderState
 
 	void setUBOdata()
 	{
-		matricesUBO.setSubData(globalMatrices.viewMatrix.data(),0,64);
-		matricesUBO.setSubData(globalMatrices.projectionMatrix.data(), 64, 64);
-		matricesUBO.setSubData(globalMatrices.VP.data(), 128, 64);
+		matricesUBO.setData(globalMatrices.viewMatrix.data());
 	}
 
 	~RenderState()
