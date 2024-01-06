@@ -1,5 +1,6 @@
 #include "ubo.h"
 #include <iostream>
+#include <cassert>
 
 UBO::UBO()
 {
@@ -30,6 +31,7 @@ void UBO::setSubData(const void* data, GLintptr offset, GLsizeiptr size)
 
 void UBO::bind()
 {
+	assert(this->uboID != GL_INVALID_INDEX);
 	glBindBuffer(GL_UNIFORM_BUFFER, this->uboID);
 }
 

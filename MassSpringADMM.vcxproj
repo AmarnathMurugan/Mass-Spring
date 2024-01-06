@@ -170,6 +170,7 @@
     <ClInclude Include="Src\Core\skybox.h" />
     <ClInclude Include="Src\Core\tetMesh.h" />
     <ClInclude Include="Src\Core\tet_mesh_boundary.h" />
+    <ClInclude Include="Src\Core\texture.h" />
     <ClInclude Include="Src\Core\triangularMesh.h" />
     <ClInclude Include="Src\Core\ubo.h" />
     <ClInclude Include="Src\Deps\Cy\cyCore.h" />
