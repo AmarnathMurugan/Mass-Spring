@@ -216,6 +216,15 @@ void Engine::update()
 	lightDir4f.head<3>() = this->scene.renderState.lightDir;
 	lightDir4f.w() = 0.0f;	Eigen::Vector3f viewSpaceLightDir = (this->scene.renderState.globalMatrices.viewMatrix * lightDir4f).head<3>();
 
+	
+	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
+	bool isCallFixedUpdate = false;
+	if (elapsed.count() >= this->engineState.physics.fixedDeltaTime)
+	{
+		this->engineState.physics.start = std::chrono::high_resolution_clock::now();
+		isCallFixedUpdate = true;
+	}
+
 	// iterate through all shaders and render the scene objects
 	for (auto& [shader, sceneObjs] : this->scene.shaderSceneObjectMapping)
 	{
@@ -234,7 +243,12 @@ void Engine::update()
 		{
 			if (!sceneObj->isActive)
 				continue;
+
+			// Call updates
 			sceneObj->update(this->engineState);
+			if (isCallFixedUpdate)							
+				sceneObj->fixedUpdate(this->engineState);
+			
 
 			// If the object is renderable, set all the matrices and render
 			if (!sceneObj->isRenderable)
@@ -259,7 +273,7 @@ void Engine::update()
 
 
 	// Update physics
-	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
+	
 	if (elapsed.count() > this->engineState.physics.fixedDeltaTime)
 	{
 		for (auto& sceneObj : this->scene.sceneObjects)
