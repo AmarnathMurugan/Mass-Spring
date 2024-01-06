@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <unordered_set>
 #include <chrono>
+#include "ubo.h"
 
 #define GL_INVALID_INDEX 0xFFFFFFFF
 
@@ -34,6 +35,7 @@ struct Transform
 	}	
 };
 
+
 struct RenderState
 {
 	Eigen::Vector3f cameraPosition;
@@ -46,25 +48,29 @@ struct RenderState
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
 	float lightIntensity = 1.0f;
 
-	GLuint matrixUBO = GL_INVALID_INDEX;
-	GLuint lightUBO = GL_INVALID_INDEX;
-
-	struct alignas(16) Matices
+	UBO matricesUBO;
+	
+	struct Matrices
 	{
 		Eigen::Matrix4f viewMatrix, projectionMatrix, VP;
-	};
+	}globalMatrices;
 
-	void initializeUBOs()
+	
+
+	RenderState()
 	{
-		glGenBuffers(1, &this->matrixUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, this->matrixUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(Eigen::Matrix4f) * 2, nullptr, GL_DYNAMIC_DRAW);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		matricesUBO.initUBO(0, sizeof(Matrices));
+	}
 
-		glGenBuffers(1, &this->lightUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, this->lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(Eigen::Vector3f) * 3 + sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	void setUBOdata()
+	{
+		matricesUBO.setSubData(globalMatrices.viewMatrix.data(),0,64);
+		matricesUBO.setSubData(globalMatrices.projectionMatrix.data(), 64, 64);
+		matricesUBO.setSubData(globalMatrices.VP.data(), 128, 64);
+	}
+
+	~RenderState()
+	{
 	}
 };
 
@@ -93,7 +99,7 @@ struct EngineState
 	KeyboardState keyboard;
 	MouseState mouse;
 	PhysicsSettings physics;
-	RenderState renderState;
+	RenderState* renderState;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	std::chrono::time_point<std::chrono::high_resolution_clock> prevTime;
 	double deltaTime;

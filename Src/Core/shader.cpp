@@ -69,7 +69,7 @@ void Shader::bind()
 
 }
 
-inline GLuint Shader::getProgram() const
+GLuint Shader::getProgram() const
 {
 	return program;
 }

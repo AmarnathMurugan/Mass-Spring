@@ -10,6 +10,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, 0);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	this->initScene();
 }
 
@@ -84,7 +85,7 @@ void Engine::initScene()
 	plane->generateBuffers();
 	plane->transform.scale = Eigen::Vector3f(3, 3, 3);
 	this->scene.addSceneObject(plane, planeMat);
-	this->engineState.renderState = scene.renderState;
+	this->engineState.renderState = &scene.renderState;
 }
 
 
@@ -202,27 +203,27 @@ void Engine::update()
 	this->handleInteractions();
 	this->scene.cam->update(this->engineState);
 
-	// Set global render state parameters
-	this->scene.renderState.viewMatrix = this->scene.cam->viewMatrix();
-	this->scene.renderState.projectionMatrix = this->scene.cam->projectionMatrix(this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
-	Eigen::Matrix4f VP = this->scene.renderState.projectionMatrix * this->scene.renderState.viewMatrix;
+	// == Set global render state parameters ==
+	// Set global matrices
+	this->scene.renderState.globalMatrices.viewMatrix = this->scene.cam->viewMatrix();
+	this->scene.renderState.globalMatrices.projectionMatrix = this->scene.cam->projectionMatrix(this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
+	Eigen::Matrix4f VP = this->scene.renderState.globalMatrices.projectionMatrix * this->scene.renderState.globalMatrices.viewMatrix;
+	// Set matrices in UBO
+	this->scene.renderState.setUBOdata();
+
+	// Set lighting parameters
+	Eigen::Vector4f lightDir4f;
+	lightDir4f.head<3>() = this->scene.renderState.lightDir;
+	lightDir4f.w() = 0.0f;	Eigen::Vector3f viewSpaceLightDir = (this->scene.renderState.globalMatrices.viewMatrix * lightDir4f).head<3>();
 
 	// iterate through all shaders and render the scene objects
 	for (auto& [shader, sceneObjs] : this->scene.shaderSceneObjectMapping)
 	{
-		shader->bind();
-
-		// Set matrix uniforms
-		shader->setUniform("uView", this->scene.renderState.viewMatrix);
-		shader->setUniform("uProjection", this->scene.renderState.projectionMatrix);
-		shader->setUniform("uVP", VP);
+		shader->bind();		
 
 		// Set lighting uniforms
-		shader->setUniform("uLightDir", this->scene.renderState.lightDir);
-		Eigen::Vector4f lightDir4f;
-		lightDir4f.head<3>() = this->scene.renderState.lightDir;
-		lightDir4f.w() = 0.0f;
-		Eigen::Vector3f viewSpaceLightDir = (this->scene.renderState.viewMatrix * lightDir4f).head<3>();
+		shader->setUniform("uLightDir", this->scene.renderState.lightDir);	
+		
 		shader->setUniform("uViewLightDir", viewSpaceLightDir.normalized());
 		shader->setUniform("uLightColor", this->scene.renderState.lightColor);
 		shader->setUniform("uLightIntensity", this->scene.renderState.lightIntensity);
@@ -240,7 +241,7 @@ void Engine::update()
 				continue;
 			this->scene.sceneObjectMaterialMapping[sceneObj]->use();
 			Eigen::Matrix4f modelMatrix = sceneObj->transform.matrix();
-			Eigen::Matrix4f MV = this->scene.renderState.viewMatrix * modelMatrix;
+			Eigen::Matrix4f MV = this->scene.renderState.globalMatrices.viewMatrix * modelMatrix;
 			Eigen::Matrix4f MVP = VP * modelMatrix;
 			Eigen::Matrix3f normalMatrix = MV.block<3, 3>(0, 0).inverse().transpose();
 			this->scene.sceneObjectMaterialMapping[sceneObj]->shader->setUniform("uModel", modelMatrix);
