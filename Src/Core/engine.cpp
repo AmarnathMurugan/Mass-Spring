@@ -245,9 +245,9 @@ void Engine::update()
 				continue;
 
 			// Call updates
-			sceneObj->update(this->engineState);
 			if (isCallFixedUpdate)							
 				sceneObj->fixedUpdate(this->engineState);
+			sceneObj->update(this->engineState);
 			
 
 			// If the object is renderable, set all the matrices and render
@@ -272,19 +272,7 @@ void Engine::update()
 	this->scene.skybox->render();
 
 
-	// Update physics
-	
-	if (elapsed.count() > this->engineState.physics.fixedDeltaTime)
-	{
-		for (auto& sceneObj : this->scene.sceneObjects)
-		{
-			if (!sceneObj->isActive)
-				continue;
-			sceneObj->fixedUpdate(this->engineState);
-		}
-		this->engineState.physics.start = std::chrono::high_resolution_clock::now();
-	}
-
+	// Update state
 	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
 	this->engineState.mouse.scroll = 0.0f;
 }
