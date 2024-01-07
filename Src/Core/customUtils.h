@@ -5,7 +5,6 @@
 #include<Cy/cyTriMesh.h>
 #include "gfx.h"
 #include <chrono>
-#include "stb/stb_image.h"
 
 namespace CustomUtils
 {
