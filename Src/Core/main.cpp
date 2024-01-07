@@ -1,9 +1,10 @@
 #define NOMINMAX
+#define STB_IMAGE_IMPLEMENTATION
+#define GLEQ_IMPLEMENTATION
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#define GLEQ_IMPLEMENTATION
-#include "gleq.h"
+#include "gleq/gleq.h"
 #include "engine.h"
 
 int main(int argc, char* argv[])

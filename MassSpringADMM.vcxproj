@@ -178,8 +178,9 @@
     <ClInclude Include="Src\Deps\Cy\cyTriMesh.h" />
     <ClInclude Include="Src\Deps\Cy\cyVector.h" />
     <ClInclude Include="Src\Deps\glad\glad.h" />
-    <ClInclude Include="Src\Deps\gleq.h" />
+    <ClInclude Include="Src\Deps\gleq\gleq.h" />
     <ClInclude Include="Src\Deps\KHR\khrplatform.h" />
+    <ClInclude Include="Src\Deps\stb\stb_image.h" />
     <ClInclude Include="Src\Headers\Custom\camera.h" />
     <ClInclude Include="Src\Headers\Custom\Components\Component.h" />
     <ClInclude Include="Src\Headers\Custom\Components\DirectionalLight.h" />

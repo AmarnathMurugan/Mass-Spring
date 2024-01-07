@@ -1,6 +1,6 @@
 #pragma once
 #include "includes.h"
-#include "gleq.h"
+#include "gleq/gleq.h"
 // Scene Objects
 #include "camera.h"
 #include "triangularMesh.h"
