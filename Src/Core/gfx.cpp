@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gfx.h"
 
-void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void GLAPIENTRY openGLErrorMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	{
 		// print message with the right string for type, severity and source
@@ -77,7 +77,7 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 			_severity = "NOTIFICATION";
 			return;
 		}
-
+		assert(_severity != "HIGH" || _type != "ERROR");
 		std::cout << "\n[" << _source << " | " << _severity << " | " << _type << "]" << message;
 	}
 }

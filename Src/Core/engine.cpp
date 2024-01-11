@@ -9,7 +9,7 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glViewport(0, 0, this->scene.renderState.windowWidth, this->scene.renderState.windowHeight);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(MessageCallback, 0);
+	glDebugMessageCallback(openGLErrorMessageCallback, 0);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	this->initScene();
 }
@@ -30,6 +30,10 @@ void Engine::initScene()
 	});
 	this->scene.skyboxMaterial = std::make_shared<SkyboxMaterial>(skyboxShader,Eigen::Vector3f(1,0,0));
 
+	// Load skybox textures
+	std::shared_ptr<Texture> skyboxTexture = std::make_shared<Texture>();
+	skyboxTexture->setImageData("resources/Textures/Cubemaps/attic");
+	this->scene.skyboxMaterial->textures.emplace_back(skyboxTexture);
 	
 	// Create Scene Objects and Materials
 	std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>(

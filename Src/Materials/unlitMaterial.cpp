@@ -7,5 +7,6 @@ UnlitMaterial::UnlitMaterial(const std::shared_ptr<Shader>& _shader, const Eigen
 
 void UnlitMaterial::setUniforms()
 {
+	Material::setUniforms();
 	this->shader->setUniform("uDiffuseColor", diffuseColor);
 }

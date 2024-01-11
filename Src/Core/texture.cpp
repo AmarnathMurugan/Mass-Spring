@@ -1,0 +1,139 @@
+#include "texture.h"
+
+Texture::Texture()
+{
+	glGenTextures(1, &textureID);
+}
+
+Texture::Texture(GLuint _texUnit): Texture()
+{
+	this->textureSettings.texUnit = _texUnit;
+}
+
+Texture::Texture(const TextureSettings& _textureSettings) : Texture()
+{
+	this->textureSettings = _textureSettings;
+}
+
+void Texture::bind()
+{
+	glActiveTexture(GL_TEXTURE0 + this->textureSettings.texUnit);
+	glBindTexture(this->textureSettings.target, textureID);
+}
+
+
+GLuint Texture::ID()
+{
+	return this->textureID;
+}
+
+/// <summary>
+/// Take the path to an image for a 2d texture or a directory for a cubemap and set the texture data
+/// </summary>
+/// <param name="_path"></param>
+void Texture::setImageData(std::string _path)
+{
+	this->bind();
+	this->textureSettings.path = _path;
+	// check if path is a directory or a file
+	if (std::filesystem::is_directory(this->textureSettings.path))
+	{
+		this->textureSettings.target = GL_TEXTURE_CUBE_MAP;
+		// Get all the faces of the cubemap from the directory
+		std::vector<std::string> faces;
+		for (const auto& entry : std::filesystem::directory_iterator(this->textureSettings.path))
+			faces.push_back(entry.path().string());
+		// Sort them by name, this assumes that the faces are named in the order of the cubemap enum
+		std::sort(faces.begin(), faces.end());
+		// if the first face is an hdr then the cubemap is hdr
+		bool isHDR = faces[0].substr(faces[0].size() - 3, 3) == "hdr";
+		if (isHDR)
+			this->textureSettings.internalFormat = GL_FLOAT;
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			if (i == 0)
+			{
+				switch (textureSettings.numChannels)
+				{
+				case 1:
+					this->textureSettings.format = GL_RED;
+					break;
+				case 2:
+					this->textureSettings.format = GL_RG;
+					break;
+				case 3:
+					this->textureSettings.format = GL_RGB;
+					break;
+				case 4:
+					this->textureSettings.format = GL_RGBA;
+					break;
+				default:
+					break;
+				}
+			}
+			if (isHDR)
+			{
+				float* data = stbi_loadf(faces[i].c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+				if (data)
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->textureSettings.level, this->textureSettings.format, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.internalFormat, this->textureSettings.type, data);
+				else
+					std::cout << "Texture failed to load at path: " << faces[i] << "\n";
+				stbi_image_free(data);
+			}
+			else
+			{
+				unsigned char* data = stbi_load(faces[i].c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+				if (data)
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
+				else
+					std::cout << "Texture failed to load at path: " << faces[i] << "\n";									
+				stbi_image_free(data);
+			}
+			i++;
+		}
+	}
+	else
+	{
+		this->textureSettings.target = GL_TEXTURE_2D;
+		unsigned char* data = stbi_load(this->textureSettings.path.c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+		switch (textureSettings.numChannels)
+		{
+		case 1:
+			this->textureSettings.format = GL_RED;
+			break;
+		case 2:
+			this->textureSettings.format = GL_RG;
+			break;
+		case 3:
+			this->textureSettings.format = GL_RGB;
+			break;
+		case 4:
+			this->textureSettings.format = GL_RGBA;
+			break;
+		default:
+			break;
+		}
+		if (data)
+			glTexImage2D(this->textureSettings.target, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
+		else
+			std::cout << "Texture failed to load at path: " << this->textureSettings.path << "\n";
+		stbi_image_free(data);
+	}
+	if (this->textureSettings.mipMap)
+		glGenerateMipmap(this->textureSettings.target);
+	this->updateParameters();
+}
+
+void Texture::updateParameters()
+{
+	glTexParameteri(this->textureSettings.target, GL_TEXTURE_WRAP_S, this->textureSettings.wrapS);
+	glTexParameteri(this->textureSettings.target, GL_TEXTURE_WRAP_T, this->textureSettings.wrapT);
+	glTexParameteri(this->textureSettings.target, GL_TEXTURE_WRAP_R, this->textureSettings.wrapR);
+	glTexParameteri(this->textureSettings.target, GL_TEXTURE_MIN_FILTER, this->textureSettings.minFilter);
+	glTexParameteri(this->textureSettings.target, GL_TEXTURE_MAG_FILTER, this->textureSettings.magFilter);
+}
+
+Texture::~Texture()
+{
+	glDeleteTextures(1, &this->textureID);
+}

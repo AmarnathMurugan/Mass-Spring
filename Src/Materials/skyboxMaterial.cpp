@@ -7,5 +7,6 @@ SkyboxMaterial::SkyboxMaterial(const std::shared_ptr<Shader>& _shader, const Eig
 
 void SkyboxMaterial::setUniforms()
 {
+	Material::setUniforms();
 	this->shader->setUniform("uDiffuseColor", diffuseColor);
 }

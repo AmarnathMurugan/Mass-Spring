@@ -7,6 +7,7 @@ BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<Shader> _shader, SurfaceP
 
 void BlinnPhongMaterial::setUniforms()
 {
+	Material::setUniforms();
 	this->shader->setUniform("uDiffuseColor", this->surfaceProperties.diffuseColor);
 	this->shader->setUniform("uSpecularColor", this->surfaceProperties.specularColor);
 	this->shader->setUniform("uShininess", this->surfaceProperties.shininess);

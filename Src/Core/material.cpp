@@ -6,3 +6,11 @@ void Material::use() {
 	shader->bind();
 	setUniforms();
 }
+
+void Material::setUniforms()
+{
+	for (auto& texture: textures)
+	{
+		texture->bind();
+	}
+}

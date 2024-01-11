@@ -209,6 +209,7 @@
     <ClCompile Include="Src\Core\skybox.cpp" />
     <ClCompile Include="Src\Core\tetMesh.cpp" />
     <ClCompile Include="Src\Core\tet_mesh_boundary.cpp" />
+    <ClCompile Include="Src\Core\texture.cpp" />
     <ClCompile Include="Src\Core\triangularMesh.cpp" />
     <ClCompile Include="Src\Core\ubo.cpp" />
     <ClCompile Include="Src\Deps\glad\glad.c" />
