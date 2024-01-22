@@ -37,6 +37,7 @@ public:
 	Texture(const TextureSettings& _textureSettings);
 	void bind();
 	void setImageData(std::string _path);
+	void setFormat();
 	GLuint ID();
 	void updateParameters();
 	~Texture();

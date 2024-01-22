@@ -77,7 +77,7 @@ void GLAPIENTRY openGLErrorMessageCallback(GLenum source, GLenum type, GLuint id
 			_severity = "NOTIFICATION";
 			return;
 		}
-		assert(_severity != "HIGH" || _type != "ERROR");
 		std::cout << "\n[" << _source << " | " << _severity << " | " << _type << "]" << message;
+		assert(_severity != "HIGH" || _type != "ERROR");
 	}
 }

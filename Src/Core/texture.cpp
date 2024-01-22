@@ -32,8 +32,7 @@ GLuint Texture::ID()
 /// </summary>
 /// <param name="_path"></param>
 void Texture::setImageData(std::string _path)
-{
-	this->bind();
+{	
 	this->textureSettings.path = _path;
 	// check if path is a directory or a file
 	if (std::filesystem::is_directory(this->textureSettings.path))
@@ -49,33 +48,16 @@ void Texture::setImageData(std::string _path)
 		bool isHDR = faces[0].substr(faces[0].size() - 3, 3) == "hdr";
 		if (isHDR)
 			this->textureSettings.internalFormat = GL_FLOAT;
+		this->bind();
 		for (unsigned int i = 0; i < faces.size(); i++)
-		{
-			if (i == 0)
-			{
-				switch (textureSettings.numChannels)
-				{
-				case 1:
-					this->textureSettings.format = GL_RED;
-					break;
-				case 2:
-					this->textureSettings.format = GL_RG;
-					break;
-				case 3:
-					this->textureSettings.format = GL_RGB;
-					break;
-				case 4:
-					this->textureSettings.format = GL_RGBA;
-					break;
-				default:
-					break;
-				}
-			}
+		{			
 			if (isHDR)
 			{
+				this->textureSettings.type = GL_FLOAT;
 				float* data = stbi_loadf(faces[i].c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+				this->setFormat();
 				if (data)
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->textureSettings.level, this->textureSettings.format, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.internalFormat, this->textureSettings.type, data);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
 				else
 					std::cout << "Texture failed to load at path: " << faces[i] << "\n";
 				stbi_image_free(data);
@@ -83,36 +65,21 @@ void Texture::setImageData(std::string _path)
 			else
 			{
 				unsigned char* data = stbi_load(faces[i].c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+				this->setFormat();
 				if (data)
 					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
 				else
 					std::cout << "Texture failed to load at path: " << faces[i] << "\n";									
 				stbi_image_free(data);
 			}
-			i++;
 		}
 	}
 	else
 	{
 		this->textureSettings.target = GL_TEXTURE_2D;
+		this->bind();
 		unsigned char* data = stbi_load(this->textureSettings.path.c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
-		switch (textureSettings.numChannels)
-		{
-		case 1:
-			this->textureSettings.format = GL_RED;
-			break;
-		case 2:
-			this->textureSettings.format = GL_RG;
-			break;
-		case 3:
-			this->textureSettings.format = GL_RGB;
-			break;
-		case 4:
-			this->textureSettings.format = GL_RGBA;
-			break;
-		default:
-			break;
-		}
+		setFormat();
 		if (data)
 			glTexImage2D(this->textureSettings.target, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
 		else
@@ -122,6 +89,31 @@ void Texture::setImageData(std::string _path)
 	if (this->textureSettings.mipMap)
 		glGenerateMipmap(this->textureSettings.target);
 	this->updateParameters();
+}
+
+void Texture::setFormat()
+{
+	switch (textureSettings.numChannels)
+	{
+	case 1:
+		this->textureSettings.internalFormat = GL_RED;
+		this->textureSettings.format = GL_RED;
+		break;
+	case 2:
+		this->textureSettings.internalFormat = GL_RG;
+		this->textureSettings.format = GL_RG;
+		break;
+	case 3:
+		this->textureSettings.internalFormat = GL_RGB;
+		this->textureSettings.format = GL_RGB;
+		break;
+	case 4:
+		this->textureSettings.internalFormat = GL_RGBA;
+		this->textureSettings.format = GL_RGBA;
+		break;
+	default:
+		break;
+	}
 }
 
 void Texture::updateParameters()
