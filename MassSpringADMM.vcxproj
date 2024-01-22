@@ -165,6 +165,7 @@
     <ClInclude Include="Src\Core\framebuffer.h" />
     <ClInclude Include="Src\Core\gfx.h" />
     <ClInclude Include="Src\Core\includes.h" />
+    <ClInclude Include="Src\Core\light.h" />
     <ClInclude Include="Src\Core\material.h" />
     <ClInclude Include="Src\Core\sceneObject.h" />
     <ClInclude Include="Src\Core\shader.h" />
@@ -204,6 +205,7 @@
     <ClCompile Include="Src\Core\engine.cpp" />
     <ClCompile Include="Src\Core\framebuffer.cpp" />
     <ClCompile Include="Src\Core\gfx.cpp" />
+    <ClCompile Include="Src\Core\light.cpp" />
     <ClCompile Include="Src\Core\main.cpp" />
     <ClCompile Include="Src\Core\material.cpp" />
     <ClCompile Include="Src\Core\sceneObject.cpp" />

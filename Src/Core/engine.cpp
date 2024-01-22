@@ -11,6 +11,17 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(openGLErrorMessageCallback, 0);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	shadowFramebuffer.createAndAttachTexture(
+		Texture::TextureSettings{ 
+			.internalFormat = GL_DEPTH_COMPONENT,
+			.width = 1024, 
+			.height = 1024, 
+			.format = GL_DEPTH_COMPONENT, 
+			.type = GL_FLOAT, 
+			.numChannels = 1,
+			.magFilter = GL_NEAREST,
+			.minFilter = GL_NEAREST,
+		}, GL_DEPTH_ATTACHMENT, false);
 	this->initScene();
 }
 
@@ -32,7 +43,8 @@ void Engine::initScene()
 
 	// Load skybox textures
 	std::shared_ptr<Texture> skyboxTexture = std::make_shared<Texture>();
-	skyboxTexture->setImageData("resources/Textures/Cubemaps/attic");
+	skyboxTexture->textureSettings.path = "resources/Textures/Cubemaps/attic";
+	skyboxTexture->initTexture();
 	this->scene.skyboxMaterial->textures.emplace_back(skyboxTexture);
 	
 	// Create Scene Objects and Materials
@@ -219,8 +231,12 @@ void Engine::update()
 		isCallFixedUpdate = true;
 	}
 
+	this->shadowFramebuffer.bind();
 	// Render Scene
 	this->render();	
+	Framebuffer::setDefaultFramebuffer();
+	// Render Scene
+	this->render();
 
 	// Render Skybox
 	this->scene.skyboxMaterial->use();

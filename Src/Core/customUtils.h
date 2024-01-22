@@ -187,4 +187,34 @@ namespace CustomUtils
 			Eigen::AngleAxisf(euler.y(), Eigen::Vector3f::UnitY()) *
 			Eigen::AngleAxisf(euler.z(), Eigen::Vector3f::UnitZ());
 	}
+
+	inline Eigen::Matrix4f perspectiveProjection(float FOV, float aspect, float nearPlane, float farPlane)
+	{
+		Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+		float tanhalf = tanf(CustomUtils::radians(FOV) / 2.0f);
+		projection(0, 0) = 1.0f / (aspect * tanhalf);
+		projection(1, 1) = 1.0f / tanhalf;
+		projection(2, 2) = -(farPlane + nearPlane) / (farPlane - nearPlane);
+		projection(2, 3) = -2.0f * farPlane * nearPlane / (farPlane - nearPlane);
+		projection(3, 2) = -1.0f;
+		return projection;
+	}
+
+	inline Eigen::Matrix4f orthographicProjection(float distance, float FOV, float aspect, float nearPlane, float farPlane)
+	{
+		Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+		float zoom = CustomUtils::radians(FOV) * distance;
+		float left = -aspect * zoom * 0.5f;
+		float right = aspect * zoom * 0.5f;
+		float bottom = -zoom * 0.5f;
+		float top = zoom * 0.5f;
+		projection(0, 0) = 2 / (right - left);
+		projection(1, 1) = 2 / (top - bottom);
+		projection(2, 2) = -2 / (farPlane - nearPlane);
+		projection(0, 3) = -(right + left) / (right - left);
+		projection(1, 3) = -(top + bottom) / (top - bottom);
+		projection(2, 3) = -(farPlane + nearPlane) / (farPlane - nearPlane);
+		projection(3, 3) = 1;
+		return projection;
+	}
 }

@@ -46,7 +46,7 @@ public:
 	Texture(GLuint _texUnit);
 	Texture(const TextureSettings& _textureSettings);
 	void bind();
-	void setImageData(std::string _path);
+	void initTexture();
 	void setFormat();
 	void resize(const Eigen::Vector2i& res);
 	GLuint ID();

@@ -13,6 +13,7 @@ Texture::Texture(GLuint _texUnit): Texture()
 Texture::Texture(const TextureSettings& _textureSettings) : Texture()
 {
 	this->textureSettings = _textureSettings;
+	this->initTexture();
 }
 
 void Texture::bind()
@@ -31,9 +32,8 @@ GLuint Texture::ID()
 /// Take the path to an image for a 2d texture or a directory for a cubemap and set the texture data
 /// </summary>
 /// <param name="_path"></param>
-void Texture::setImageData(std::string _path)
+void Texture::initTexture()
 {	
-	this->textureSettings.path = _path;
 	// check if path is a directory or a file
 	if (std::filesystem::is_directory(this->textureSettings.path))
 	{
@@ -80,13 +80,26 @@ void Texture::setImageData(std::string _path)
 	{
 		this->textureSettings.target = GL_TEXTURE_2D;
 		this->bind();
-		unsigned char* data = stbi_load(this->textureSettings.path.c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
-		setFormat();
-		if (data)
-			glTexImage2D(this->textureSettings.target, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
+		if (std::filesystem::is_regular_file(this->textureSettings.path))
+		{
+			unsigned char* data = stbi_load(this->textureSettings.path.c_str(), &this->textureSettings.width, &this->textureSettings.height, &this->textureSettings.numChannels, 0);
+			setFormat();
+			if (data)
+				glTexImage2D(this->textureSettings.target, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, data);
+			else
+				std::cout << "Texture failed to load at path: " << this->textureSettings.path << "\n";
+			stbi_image_free(data);
+		}
+		else if (this->textureSettings.path == "")
+		{
+			glTexImage2D(this->textureSettings.target, this->textureSettings.level, this->textureSettings.internalFormat, this->textureSettings.width, this->textureSettings.height, this->textureSettings.border, this->textureSettings.format, this->textureSettings.type, NULL);
+		}
 		else
-			std::cout << "Texture failed to load at path: " << this->textureSettings.path << "\n";
-		stbi_image_free(data);
+		{
+			std::cout << "Not a valid path option for texture: " << this->textureSettings.path << "\n";	
+			assert(false);
+		}
+
 	}
 	this->updateParameters();
 }
