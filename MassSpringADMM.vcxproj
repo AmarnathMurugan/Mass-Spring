@@ -162,6 +162,7 @@
     <ClInclude Include="Src\Components\component.h" />
     <ClInclude Include="Src\Core\customUtils.h" />
     <ClInclude Include="Src\Core\engine.h" />
+    <ClInclude Include="Src\Core\framebuffer.h" />
     <ClInclude Include="Src\Core\gfx.h" />
     <ClInclude Include="Src\Core\includes.h" />
     <ClInclude Include="Src\Core\material.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Src\Components\massSpringComp.cpp" />
     <ClCompile Include="Src\Core\camera.cpp" />
     <ClCompile Include="Src\Core\engine.cpp" />
+    <ClCompile Include="Src\Core\framebuffer.cpp" />
     <ClCompile Include="Src\Core\gfx.cpp" />
     <ClCompile Include="Src\Core\main.cpp" />
     <ClCompile Include="Src\Core\material.cpp" />

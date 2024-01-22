@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <iostream>
 #include <stb/stb_image.h>
+#include <Eigen/Core>
 
 
 class Texture
@@ -32,12 +33,22 @@ public:
 		bool mipMap = true;
 	}textureSettings;
 
+	std::unordered_map<std::string, GLenum> cubemapNameToType = {
+		{"px", GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+		{"nx", GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+		{"py", GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+		{"ny", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+		{"pz", GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+		{"nz", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z}
+	};
+
 	Texture();
 	Texture(GLuint _texUnit);
 	Texture(const TextureSettings& _textureSettings);
 	void bind();
 	void setImageData(std::string _path);
 	void setFormat();
+	void resize(const Eigen::Vector2i& res);
 	GLuint ID();
 	void updateParameters();
 	~Texture();
