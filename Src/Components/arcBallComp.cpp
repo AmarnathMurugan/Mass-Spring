@@ -1,8 +1,15 @@
 #include "arcBallComp.h"
 
+ArcBall::ArcBall(Eigen::Vector3f* _lookAtPositionPtr):
+	lookAtPositionPtr(_lookAtPositionPtr)
+{
+}
+
 void ArcBall::start(const EngineState& engineState)
 {
 	this->sceneObject->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;
+	if(this->lookAtPositionPtr != nullptr)
+		*this->lookAtPositionPtr = this->lookAtPosition;
 	Eigen::Vector3f pos = this->sceneObject->transform.position;
 }
 
@@ -25,6 +32,9 @@ void ArcBall::update(const EngineState& engineState)
 
 	if (engineState.mouse.isMiddleDown && this->isPan)
 		this->pan(engineState.mouse.deltaPos);
+
+	if (this->lookAtPositionPtr != nullptr)
+		*this->lookAtPositionPtr = this->lookAtPosition;
 }
 
 void ArcBall::rotate(const Eigen::Vector2d& delta)

@@ -1,6 +1,6 @@
 #include "camera.h"
 
-Camera::Camera(float fov, float near, float far):FOV(fov),nearPlane(near),farPlane(far)
+Camera::Camera(Eigen::Vector3f _target,float fov, float near, float far):lookAtPosition(_target), FOV(fov), nearPlane(near), farPlane(far)
 {
 }
 
@@ -24,7 +24,8 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 	}
 	else
 	{
-		float zoom = CustomUtils::radians(this->FOV) * 5.0f;
+		float distance = (this->transform.position - this->lookAtPosition).norm();
+		float zoom = CustomUtils::radians(this->FOV) * distance;
 		float left = -aspect * zoom * 0.5f;
 		float right = aspect * zoom * 0.5f;
 		float bottom = -zoom * 0.5f;

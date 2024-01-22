@@ -18,7 +18,7 @@ void Engine::initScene()
 {
 	// Create camera with arcball component
 	this->scene.cam = std::make_shared<Camera>();
-	this->scene.cam->addComponent(std::make_shared<ArcBall>());
+	this->scene.cam->addComponent(std::make_shared<ArcBall>(&this->scene.cam->lookAtPosition));
 
 	// Create Skybox
 	this->scene.skybox = std::make_shared<Skybox>();

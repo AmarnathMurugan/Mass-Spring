@@ -6,6 +6,7 @@ class ArcBall : public Component
 {
 	public:
 		Eigen::Vector3f lookAtPosition = Eigen::Vector3f::Zero();
+		Eigen::Vector3f *lookAtPositionPtr = nullptr;
 		bool isPan = true;
 		bool isZoom = true;
 		bool isLookAt = true;
@@ -19,6 +20,7 @@ class ArcBall : public Component
 		float phi = 0; // angle around y axis
 		float distance = 5;
 	public:
+		ArcBall(Eigen::Vector3f *_lookAtPositionPtr = nullptr);
 		void start(const EngineState& engineState) override;
 		void update(const EngineState& engineState) override;
 		void rotate(const Eigen::Vector2d& delta);
