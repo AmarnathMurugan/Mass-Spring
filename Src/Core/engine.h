@@ -27,6 +27,7 @@ public:
 	void handleInteractions();
 	void handleInteractions(int key, bool isDown);
 	void update();
+	void render();
 	void stop();
 private:
 
@@ -65,6 +66,8 @@ private:
 			cam.reset();
 		}
 	}scene;
+
+	Framebuffer shadowFramebuffer;
 
 	EngineState engineState;
 

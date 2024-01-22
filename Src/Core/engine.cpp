@@ -206,7 +206,50 @@ void Engine::update()
 
 	this->handleInteractions();
 	this->scene.cam->update(this->engineState);
+	
 
+	
+
+	
+	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
+	bool isCallFixedUpdate = false;
+	if (elapsed.count() >= this->engineState.physics.fixedDeltaTime)
+	{
+		this->engineState.physics.start = std::chrono::high_resolution_clock::now();
+		isCallFixedUpdate = true;
+	}
+
+	// Render Scene
+	this->render();	
+
+	// Render Skybox
+	this->scene.skyboxMaterial->use();
+	// Set translation to zero in view matrix
+	Eigen::Matrix4f viewProjInv = this->scene.renderState.globalMatrices.viewMatrix;
+	viewProjInv.block<3, 1>(0, 3) = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+	viewProjInv = (this->scene.renderState.globalMatrices.projectionMatrix * viewProjInv).inverse();
+	this->scene.skyboxMaterial->shader->setUniform("viewProjInv", viewProjInv);
+	this->scene.skybox->render();
+
+
+	// Call update on all scene objects
+	for (int i = 0; i < this->scene.sceneObjects.size(); i++)
+	{
+		if (!this->scene.sceneObjects[i]->isActive)
+			continue;
+		this->scene.sceneObjects[i]->update(this->engineState);
+		if (isCallFixedUpdate)
+			this->scene.sceneObjects[i]->fixedUpdate(this->engineState);
+	}
+
+
+	// Update state
+	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
+	this->engineState.mouse.scroll = 0.0f;
+}
+
+void Engine::render()
+{
 	// == Set global render state parameters ==
 	// Set global matrices
 	this->scene.renderState.globalMatrices.viewMatrix = this->scene.cam->viewMatrix();
@@ -220,23 +263,14 @@ void Engine::update()
 	lightDir4f.head<3>() = this->scene.renderState.lightDir;
 	lightDir4f.w() = 0.0f;	Eigen::Vector3f viewSpaceLightDir = (this->scene.renderState.globalMatrices.viewMatrix * lightDir4f).head<3>();
 
-	
-	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
-	bool isCallFixedUpdate = false;
-	if (elapsed.count() >= this->engineState.physics.fixedDeltaTime)
-	{
-		this->engineState.physics.start = std::chrono::high_resolution_clock::now();
-		isCallFixedUpdate = true;
-	}
-
 	// iterate through all shaders and render the scene objects
 	for (auto& [shader, sceneObjs] : this->scene.shaderSceneObjectMapping)
 	{
-		shader->bind();		
+		shader->bind();
 
 		// Set lighting uniforms
-		shader->setUniform("uLightDir", this->scene.renderState.lightDir);	
-		
+		shader->setUniform("uLightDir", this->scene.renderState.lightDir);
+
 		shader->setUniform("uViewLightDir", viewSpaceLightDir.normalized());
 		shader->setUniform("uLightColor", this->scene.renderState.lightColor);
 		shader->setUniform("uLightIntensity", this->scene.renderState.lightIntensity);
@@ -248,11 +282,6 @@ void Engine::update()
 			if (!sceneObj->isActive)
 				continue;
 
-			// Call updates
-			if (isCallFixedUpdate)							
-				sceneObj->fixedUpdate(this->engineState);
-			sceneObj->update(this->engineState);
-			
 
 			// If the object is renderable, set all the matrices and render
 			if (!sceneObj->isRenderable)
@@ -270,21 +299,8 @@ void Engine::update()
 		}
 
 	}
-
-	// Render Skybox
-	this->scene.skyboxMaterial->use();
-	// Set translation to zero in view matrix
-	Eigen::Matrix4f viewProjInv = this->scene.renderState.globalMatrices.viewMatrix;
-	viewProjInv.block<3, 1>(0, 3) = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
-	viewProjInv = (this->scene.renderState.globalMatrices.projectionMatrix * viewProjInv).inverse();
-	this->scene.skyboxMaterial->shader->setUniform("viewProjInv", viewProjInv);
-	this->scene.skybox->render();
-
-
-	// Update state
-	this->engineState.prevTime = std::chrono::high_resolution_clock::now();
-	this->engineState.mouse.scroll = 0.0f;
 }
+
 
 void Engine::stop()
 {
