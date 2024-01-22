@@ -38,6 +38,7 @@ void Texture::setImageData(std::string _path)
 	if (std::filesystem::is_directory(this->textureSettings.path))
 	{
 		this->textureSettings.target = GL_TEXTURE_CUBE_MAP;
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		// Get all the faces of the cubemap from the directory
 		std::vector<std::string> faces;
 		for (const auto& entry : std::filesystem::directory_iterator(this->textureSettings.path))

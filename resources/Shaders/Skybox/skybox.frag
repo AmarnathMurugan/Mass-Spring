@@ -2,11 +2,12 @@
 
 layout(location = 0) out vec4 color;
 
-uniform vec3 uDiffuseColor;
+in vec3 envCoords;
 
 layout(binding = 0) uniform samplerCube uCubeMap;
 
+
 void main()
 {
-	color = vec4(uDiffuseColor,1.0);
+	color = texture(uCubeMap, envCoords);
 }

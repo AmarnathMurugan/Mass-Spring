@@ -273,6 +273,11 @@ void Engine::update()
 
 	// Render Skybox
 	this->scene.skyboxMaterial->use();
+	// Set translation to zero in view matrix
+	Eigen::Matrix4f viewProjInv = this->scene.renderState.globalMatrices.viewMatrix;
+	viewProjInv.block<3, 1>(0, 3) = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+	viewProjInv = (this->scene.renderState.globalMatrices.projectionMatrix * viewProjInv).inverse();
+	this->scene.skyboxMaterial->shader->setUniform("viewProjInv", viewProjInv);
 	this->scene.skybox->render();
 
 
