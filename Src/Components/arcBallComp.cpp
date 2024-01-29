@@ -35,6 +35,9 @@ void ArcBall::update(const EngineState& engineState)
 
 	if (this->lookAtPositionPtr != nullptr)
 		*this->lookAtPositionPtr = this->lookAtPosition;
+
+	if (this->isLookAt)
+		this->sceneObject->transform.rotation = Eigen::Quaternionf(CustomUtils::lookAtMatrix(this->sceneObject->transform.position,this->lookAtPosition,Eigen::Vector3f::UnitY()));
 }
 
 void ArcBall::rotate(const Eigen::Vector2d& delta)
@@ -43,15 +46,6 @@ void ArcBall::rotate(const Eigen::Vector2d& delta)
 	this->theta = CustomUtils::clamp(this->theta + (float)delta.y() * this->rotationSpeed, -PI_F * 0.499f, PI_F * 0.499f);
 	this->phi = this->phi - delta.x() * this->rotationSpeed;
 	this->sceneObject->transform.position = this->lookAtPosition + CustomUtils::spherePoint(this->theta, this->phi) * this->distance;
-	if (!this->isLookAt)
-		return;
-	Eigen::Vector3f dir = (this->lookAtPosition - this->sceneObject->transform.position).normalized();
-	Eigen::Vector3f up = Eigen::Vector3f(0, 1, 0);
-	Eigen::Vector3f right = dir.cross(up).normalized();
-	Eigen::Vector3f correctedUp = right.cross(dir).normalized();
-	Eigen::Matrix3f lookAtRotation;
-	lookAtRotation << right, correctedUp, -dir;
-	this->sceneObject->transform.rotation = Eigen::Quaternionf(lookAtRotation);
 }
 
 void ArcBall::zoom(float delta)

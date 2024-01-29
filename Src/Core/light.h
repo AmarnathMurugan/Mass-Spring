@@ -1,8 +1,8 @@
 #pragma once
 
-#include "sceneObject.h"
+#include "component.h"
 
-class Light : public SceneObject
+class Light : public Component
 {
 public:
 	enum class LightType
@@ -29,10 +29,13 @@ public:
 
 
 public:
-	Light(LightParameters _lightParameters) : SceneObject(), lightParameters(_lightParameters)
+	Light(LightParameters _lightParameters) : Component(), lightParameters(_lightParameters)
 	{
 	}
-	Eigen::Matrix4f getLightSpaceMatrix();
+	Eigen::Matrix4f getLightViewMatrix();
+	Eigen::Matrix4f getLightProjectionMatrix();
+	void start(const EngineState& engineState) override;
+	void update(const EngineState& engineState) override;
 private:
 
 };

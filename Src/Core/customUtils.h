@@ -22,7 +22,7 @@ namespace CustomUtils
 		{
 			auto end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> duration = end - start;
-			std::cout << "\nTime taken by "<< funcName << " :" << duration.count() << "s";
+			std::cout << "\nTime taken by " << funcName << " :" << duration.count() << "s";
 		}
 	};
 
@@ -216,5 +216,15 @@ namespace CustomUtils
 		projection(2, 3) = -(farPlane + nearPlane) / (farPlane - nearPlane);
 		projection(3, 3) = 1;
 		return projection;
+	}
+
+	inline Eigen::Matrix3f lookAtMatrix(const Eigen::Vector3f& source, const Eigen::Vector3f& target, const Eigen::Vector3f up)
+	{
+		Eigen::Matrix3f lookAtRotation;
+		Eigen::Vector3f dir = (target - source).normalized();
+		Eigen::Vector3f right = dir.cross(up).normalized();
+		Eigen::Vector3f correctedUp = right.cross(dir).normalized();
+		lookAtRotation << right, correctedUp, -dir;
+		return lookAtRotation;
 	}
 }
