@@ -15,6 +15,7 @@
 #include "massSpringComp.h"
 #include "massSpringAdmmComp.h"
 #include "arcBallComp.h"
+#include "light.h"
 
 
 class Engine
@@ -37,11 +38,15 @@ private:
 	{
 		std::vector<std::shared_ptr<SceneObject>> sceneObjects;
 		std::unordered_set<std::shared_ptr<Shader>> shaders;
+		// Used to retrieve material in render loop
 		std::unordered_map<std::shared_ptr<SceneObject>, std::shared_ptr<Material>> sceneObjectMaterialMapping;
+		// Used to render objects with the same shader together
 		std::unordered_map<std::shared_ptr<Shader>,std::unordered_set<std::shared_ptr<SceneObject>>> shaderSceneObjectMapping;
 		std::shared_ptr<Camera> cam;
 		std::shared_ptr<Skybox> skybox;
 		std::shared_ptr<SkyboxMaterial> skyboxMaterial;
+		std::vector<std::shared_ptr<Light>> lights;
+
 		RenderState renderState;
 
 		void addSceneObject(std::shared_ptr<SceneObject> sceneObj, std::shared_ptr<Material> material = nullptr)
@@ -66,8 +71,6 @@ private:
 			cam.reset();
 		}
 	}scene;
-
-	Framebuffer shadowFramebuffer;
 
 	EngineState engineState;
 

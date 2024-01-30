@@ -8,14 +8,13 @@ Eigen::Matrix4f Light::getLightViewMatrix()
 
 Eigen::Matrix4f Light::getLightProjectionMatrix()
 {
-    switch (this->lightParameters.lightType)
+    switch (this->lightParameters->lightType)
     {
         case LightType::Directional:
-			return Eigen::Matrix4f::Identity();
-            break;
+            float distance = this->lightParameters->direction.norm();
+            return CustomUtils::orthographicProjection(distance,this->lightParameters->fov,1.0f,this->lightParameters->nearPlane,this->lightParameters->farPlane);            
         case LightType::Spot:
-            return Eigen::Matrix4f::Identity();
-			break;
+            return CustomUtils::perspectiveProjection(this->lightParameters->fov,1.0f,this->lightParameters->nearPlane,this->lightParameters->farPlane);)
         default:
             return Eigen::Matrix4f::Identity();
     }
@@ -23,8 +22,10 @@ Eigen::Matrix4f Light::getLightProjectionMatrix()
 
 void Light::start(const EngineState& engineState)
 {
+    
 }
 
 void Light::update(const EngineState& engineState)
 {
+    this->lightParameters->direction = this->lightParameters->target - this->sceneObject->transform.position;
 }

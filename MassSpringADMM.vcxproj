@@ -174,7 +174,7 @@
     <ClInclude Include="Src\Core\tet_mesh_boundary.h" />
     <ClInclude Include="Src\Core\texture.h" />
     <ClInclude Include="Src\Core\triangularMesh.h" />
-    <ClInclude Include="Src\Core\ubo.h" />
+    <ClInclude Include="Src\Core\buffer.h" />
     <ClInclude Include="Src\Deps\Cy\cyCore.h" />
     <ClInclude Include="Src\Deps\Cy\cyMatrix.h" />
     <ClInclude Include="Src\Deps\Cy\cyTriMesh.h" />
@@ -215,7 +215,7 @@
     <ClCompile Include="Src\Core\tet_mesh_boundary.cpp" />
     <ClCompile Include="Src\Core\texture.cpp" />
     <ClCompile Include="Src\Core\triangularMesh.cpp" />
-    <ClCompile Include="Src\Core\ubo.cpp" />
+    <ClCompile Include="Src\Core\buffer.cpp" />
     <ClCompile Include="Src\Deps\glad\glad.c" />
     <ClCompile Include="Src\Materials\blinnPhongMaterial.cpp" />
     <ClCompile Include="Src\Materials\skyboxMaterial.cpp" />

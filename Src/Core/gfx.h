@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <unordered_set>
 #include <chrono>
-#include "ubo.h"
+#include "buffer.h"
 
 #define GL_INVALID_INDEX 0xFFFFFFFF
 
@@ -35,20 +35,54 @@ struct Transform
 	}	
 };
 
+struct CameraState
+{
+	Transform* transform = nullptr;
+	Eigen::Vector3f lookAtPosition = Eigen::Vector3f::Zero();
+	float nearPlane = 0.1, farPlane = 1000, FOV = 45;
+	bool isPerspective = true;
+};
+
+enum class LightType
+{
+	Directional,
+	Point,
+	Spot
+};
+
+struct LightParameters
+{
+	// ========= Common Params ==========
+	LightType lightType = LightType::Directional;
+	Eigen::Vector3f color = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
+	float intensity = 1.0f;
+	Eigen::Vector3f direction = Eigen::Vector3f(0.0f, 0.0f, 1.0f);
+	bool isShadowCaster = true;
+
+	// ========= Spotlight and point light Params ==========
+	float innerRadius = 1.0f;
+	float outerRadius = 2.0f;
+
+	// ========= Spotlight & Directional light Params ==========
+	Eigen::Vector3f target = Eigen::Vector3f::Zero();
+	float fov = 60.0f;
+	float nearPlane = 0.1f;
+	float farPlane = 100.0f;
+	GLuint64 shadowMapTextureHandle = GL_INVALID_INDEX;
+};
 
 struct RenderState
 {
-	Eigen::Vector3f cameraPosition;
 	Eigen::Vector3f ambientColor = Eigen::Vector3f(1,1,1);
 	Eigen::Vector3f clearColor = Eigen::Vector3f(180,230,225)/225.0;
 	int windowWidth = 960,windowHeight = 540;
 	float ambientIntensity = 0.7f;
+    
+	CameraState cameraState;
+	std::vector<LightParameters> lightStates;
 
-	Eigen::Vector3f lightDir = Eigen::Vector3f(0,1,1);
-	Eigen::Vector3f lightColor = Eigen::Vector3f(1,1,1);
-	float lightIntensity = 1.0f;
+	std::shared_ptr<Buffer> matricesUBO, lightsSSBO;
 
-	UBO matricesUBO;
 	
 	struct Matrices
 	{
@@ -59,12 +93,13 @@ struct RenderState
 
 	RenderState()
 	{
-		matricesUBO.initUBO(0, sizeof(Matrices));
+		matricesUBO = std::make_shared<Buffer>(GL_UNIFORM_BUFFER,GL_STREAM_DRAW,true);
+		matricesUBO->initBuffer(0, sizeof(Matrices));
 	}
 
 	void setUBOdata()
 	{
-		matricesUBO.setData(globalMatrices.viewMatrix.data());
+		matricesUBO->setData(globalMatrices.viewMatrix.data());
 	}
 
 	~RenderState()

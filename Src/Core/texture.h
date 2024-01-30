@@ -49,6 +49,7 @@ public:
 	void initTexture();
 	void setFormat();
 	void resize(const Eigen::Vector2i& res);
+	GLuint64 getHandle();
 	GLuint ID();
 	void updateParameters();
 	~Texture();

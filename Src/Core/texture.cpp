@@ -138,6 +138,11 @@ void Texture::resize(const Eigen::Vector2i& res)
 	this->updateParameters();
 }
 
+GLuint64 Texture::getHandle()
+{
+	return 0;
+}
+
 void Texture::updateParameters()
 {
 	if (this->textureSettings.mipMap)

@@ -1,7 +1,8 @@
 #include "camera.h"
 
-Camera::Camera(Eigen::Vector3f _target,float fov, float near, float far):lookAtPosition(_target), FOV(fov), nearPlane(near), farPlane(far)
+Camera::Camera(CameraState* _cameraState):cameraState(_cameraState)
 {
+	this->cameraState->transform = &transform;
 }
 
 Eigen::Matrix4f Camera::viewMatrix() const
@@ -13,16 +14,16 @@ Eigen::Matrix4f Camera::projectionMatrix(int WindowWidth,int WindowHeight) const
 {
 	Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
 	float aspect = WindowWidth / (float)WindowHeight;
-	if (this->isPerspective)
-	  return CustomUtils::perspectiveProjection(this->FOV, aspect, this->nearPlane, this->farPlane);
+	if (this->cameraState->isPerspective)
+	  return CustomUtils::perspectiveProjection(this->cameraState->FOV, aspect, this->cameraState->nearPlane, this->cameraState->farPlane);
 	else
 	{
-		float distance = (this->transform.position - this->lookAtPosition).norm();
-		return CustomUtils::orthographicProjection(distance, this->FOV, aspect, this->nearPlane, this->farPlane);
+		float distance = (this->transform.position - this->cameraState->lookAtPosition).norm();
+		return CustomUtils::orthographicProjection(distance, this->cameraState->FOV, aspect, this->cameraState->nearPlane, this->cameraState->farPlane);
 	}
 }
 
 void Camera::switchProjectionType(bool isPerspective)
 { 
-	this->isPerspective = isPerspective;
+	this->cameraState->isPerspective = isPerspective;
 }

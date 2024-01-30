@@ -11,25 +11,15 @@ Engine::Engine(GLFWwindow* _window): window(_window)
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(openGLErrorMessageCallback, 0);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	shadowFramebuffer.createAndAttachTexture(
-		Texture::TextureSettings{ 
-			.internalFormat = GL_DEPTH_COMPONENT,
-			.width = 1024, 
-			.height = 1024, 
-			.format = GL_DEPTH_COMPONENT, 
-			.type = GL_FLOAT, 
-			.numChannels = 1,
-			.magFilter = GL_NEAREST,
-			.minFilter = GL_NEAREST,
-		}, GL_DEPTH_ATTACHMENT, false);
 	this->initScene();
 }
 
 void Engine::initScene()
 {
 	// Create camera with arcball component
-	this->scene.cam = std::make_shared<Camera>();
-	this->scene.cam->addComponent(std::make_shared<ArcBall>(&this->scene.cam->lookAtPosition));
+	this->scene.renderState.cameraState = CameraState{ .lookAtPosition = Eigen::Vector3f(0.0f, 0.2f, 0.0f) };
+	this->scene.cam = std::make_shared<Camera>(&this->scene.renderState.cameraState);
+	this->scene.cam->addComponent(std::make_shared<ArcBall>(&this->scene.renderState.cameraState.lookAtPosition));
 
 	// Create Skybox
 	this->scene.skybox = std::make_shared<Skybox>();
@@ -54,13 +44,7 @@ void Engine::initScene()
 		{ShaderType::VertexShader, "resources/Shaders/Unlit/unlit.vert"},
 		{ ShaderType::FragmentShader,"resources/Shaders/Unlit/unlit.frag" }
 	});
-
-	std::shared_ptr<Shader> blinnPhongShader = std::make_shared<Shader>(
-		std::unordered_map<ShaderType, std::string>
-	{
-		{ShaderType::VertexShader, "resources/Shaders/BlinnPhong/blinnPhong.vert"},
-		{ ShaderType::FragmentShader,"resources/Shaders/BlinnPhong/blinnPhong.frag" }
-	});
+	
 
 	std::shared_ptr<Shader> blinnPhongShaderDobulePrecision = std::make_shared<Shader>(
 		std::unordered_map<ShaderType, std::string>
@@ -92,6 +76,13 @@ void Engine::initScene()
 	std::shared_ptr<MassSpring> massSpringNewton = std::make_shared<MassSpring>(tetMeshNewton);
 	tetMeshNewton->addComponent(massSpringNewton);
 
+
+	std::shared_ptr<Shader> blinnPhongShader = std::make_shared<Shader>(
+		std::unordered_map<ShaderType, std::string>
+	{
+		{ShaderType::VertexShader, "resources/Shaders/BlinnPhong/blinnPhong.vert"},
+		{ ShaderType::FragmentShader,"resources/Shaders/BlinnPhong/blinnPhong.frag" }
+	});
 	
 	blinnPhongProperties.diffuseColor = Eigen::Vector3f(0.5f, 1.0f, 0.2f);
 	blinnPhongProperties.shininess = 500.0f;
@@ -191,7 +182,7 @@ void Engine::handleInteractions(int key, bool isDown)
 			break;
 		case GLFW_KEY_P:
 			if (!isDown) break;
-			this->scene.cam->switchProjectionType(!this->scene.cam->isPerspective);
+			this->scene.cam->switchProjectionType(!this->scene.renderState.cameraState.isPerspective);
 			break;
 		case GLFW_KEY_LEFT_CONTROL:
 			break;
@@ -219,10 +210,6 @@ void Engine::update()
 	this->handleInteractions();
 	this->scene.cam->update(this->engineState);
 	
-
-	
-
-	
 	std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - this->engineState.physics.start;
 	bool isCallFixedUpdate = false;
 	if (elapsed.count() >= this->engineState.physics.fixedDeltaTime)
@@ -231,16 +218,20 @@ void Engine::update()
 		isCallFixedUpdate = true;
 	}
 
-	this->shadowFramebuffer.bind();
-	// Render Scene
-	this->render();	
+	// Iterate through all lights and render the scene objects
+	for (auto& light : this->scene.lights)
+	{
+		light->shadowMap.bind();
+		this->render();
+	}
+
 	Framebuffer::setDefaultFramebuffer();
 	// Render Scene
 	this->render();
 
 	// Render Skybox
 	this->scene.skyboxMaterial->use();
-	// Set translation to zero in view matrix
+	// Set translation to zero in view matrix before calculating view-projection inverse. This matrix is used to sample the skybox with world space direction
 	Eigen::Matrix4f viewProjInv = this->scene.renderState.globalMatrices.viewMatrix;
 	viewProjInv.block<3, 1>(0, 3) = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
 	viewProjInv = (this->scene.renderState.globalMatrices.projectionMatrix * viewProjInv).inverse();

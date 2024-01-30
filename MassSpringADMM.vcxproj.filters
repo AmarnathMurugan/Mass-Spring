@@ -120,7 +120,7 @@
     <ClInclude Include="Src\Core\skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\ubo.h">
+    <ClInclude Include="Src\Core\buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\texture.h">
@@ -194,7 +194,7 @@
     <ClCompile Include="Src\Core\skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\ubo.cpp">
+    <ClCompile Include="Src\Core\buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\texture.cpp">
